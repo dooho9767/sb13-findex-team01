@@ -8,27 +8,35 @@ import java.time.*;
 
 @Entity
 @Getter
+@Table(name = "index_info")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IndexInfo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // 지수 정보 ID
+    private Long id;
 
-    private String indexClassification; // 지수 분류명
+    @Column(name = "index_classification", length = 30, nullable = false)
+    private String indexClassification;
 
-    private String indexName; // 지수명
+    @Column(name = "index_name", length = 100, nullable = false)
+    private String indexName;
 
-    private int employedItemsCount; // 구성 종목 수
+    @Column(name = "employed_items_count")
+    private int employedItemsCount;
 
-    private LocalDateTime basePointInTime; // 기준 시점
+    @Column(name = "base_point_in_time", nullable = false)
+    private LocalDateTime basePointInTime;
 
-    private BigDecimal baseIndex; // 기준 지수
+    @Column(name = "base_index", nullable = false)
+    private BigDecimal baseIndex;
 
+    @Column(name = "source_type", length = 30, nullable = false)
     @Enumerated(EnumType.STRING)
-    private SourceType sourceType; // 데이터 출처 유형
+    private SourceType sourceType;
 
-    private boolean favorite; // 즐겨찾기 여부
+    @Column(name = "favorite")
+    private boolean favorite;
 
 
 }
