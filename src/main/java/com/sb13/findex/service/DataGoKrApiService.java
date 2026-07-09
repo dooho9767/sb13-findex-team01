@@ -22,25 +22,7 @@ public class DataGoKrApiService {
     private final RestClient findexRestClient;
 
     public List<StockMarketIndex> getStockMarketIndexList() {
-        DataGoKrApiResponse<StockMarketIndex> stockMarketIndexResponse = call(
-                properties.stockMarketEndpoint(),
-                new ParameterizedTypeReference<DataGoKrApiResponse<StockMarketIndex>>() {
-                }
-        );
-
-        return getList(stockMarketIndexResponse);
-    }
-
-    private <T> List<T> getList(DataGoKrApiResponse<T> response) {
-        if (isResponseError(response)) {
-            log.error("response : {}", response);
-            return List.of();
-        }
-        return response.getItem();
-    }
-
-    private static <T> boolean isResponseError(DataGoKrApiResponse<T> response) {
-        return !"00".equals(response.getResultCode());
+       return getStockMarketIndexList(null);
     }
 
     public List<StockMarketIndex> getStockMarketIndexList(StockMarketIndexApiRequest request) {
@@ -52,22 +34,6 @@ public class DataGoKrApiService {
         );
 
         return getList(stockMarketIndexResponse);
-    }
-
-    private <T> DataGoKrApiResponse<T> call(
-            String endpoint,
-            ParameterizedTypeReference<DataGoKrApiResponse<T>> responseType
-    ) {
-
-        return findexRestClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/" + endpoint)
-                        .queryParam("serviceKey", "{serviceKey}")
-                        .queryParam("resultType", "json")
-                        .build(properties.serviceKey())
-                )
-                .retrieve()
-                .body(responseType);
     }
 
     private <T> DataGoKrApiResponse<T> call(
@@ -102,5 +68,17 @@ public class DataGoKrApiService {
                                 request.toQueryParams().get(key)
                         )
                 );
+    }
+
+    private <T> List<T> getList(DataGoKrApiResponse<T> response) {
+        if (isResponseError(response)) {
+            log.error("response : {}", response);
+            return List.of();
+        }
+        return response.getItem();
+    }
+
+    private <T> boolean isResponseError(DataGoKrApiResponse<T> response) {
+        return !"00".equals(response.getResultCode());
     }
 }
