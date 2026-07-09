@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriBuilder;
 
-import java.net.URI;
 import java.util.List;
 
 @Service
@@ -23,10 +22,6 @@ public class DataGoKrApiService {
     private final RestClient findexRestClient;
 
     public List<StockMarketIndex> getStockMarketIndexList() {
-        log.info("serviceKey = {}", properties.serviceKey());
-        log.info("baseUrl = {}", properties.baseUrl());
-        log.info("endpoint = {}", properties.stockMarketEndpoint());
-
         DataGoKrApiResponse<StockMarketIndex> stockMarketIndexResponse = call(
                 properties.stockMarketEndpoint(),
                 new ParameterizedTypeReference<DataGoKrApiResponse<StockMarketIndex>>() {
@@ -41,7 +36,6 @@ public class DataGoKrApiService {
             log.error("response : {}", response);
             return List.of();
         }
-        log.info("response : {}", response);
         return response.getItem();
     }
 
@@ -66,16 +60,12 @@ public class DataGoKrApiService {
     ) {
 
         return findexRestClient.get()
-                .uri(uriBuilder -> {
-                    URI uri = uriBuilder
-                            .path("/" + endpoint)
-                            .queryParam("serviceKey", "{serviceKey}")
-                            .queryParam("resultType", "json")
-                            .build(properties.serviceKey());
-
-                    log.info("request uri = {}", uri);
-                    return uri;
-                })
+                .uri(uriBuilder -> uriBuilder
+                        .path("/" + endpoint)
+                        .queryParam("serviceKey", "{serviceKey}")
+                        .queryParam("resultType", "json")
+                        .build(properties.serviceKey())
+                )
                 .retrieve()
                 .body(responseType);
     }
