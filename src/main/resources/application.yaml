@@ -1,3 +1,16 @@
 spring:
   application:
     name: findex
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+findex:
+  api:
+    base-url: https://apis.data.go.kr/1160100/service/GetMarketIndexInfoService
+    stock-market-endpoint: getStockMarketIndex
