@@ -19,26 +19,18 @@ public class AutoSyncConfig {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String configName; // 설정명
+    /*
+    26/07/09 16:40 기준
+    IndexInfo 엔티티가 아직 없으니 우선 FK만 Long으로
+    */
+    @Column(name = "index_info_id", nullable = false)
+    private Long indexInfoId;
 
     @Column(nullable = false)
-    private String cronExpression; // 크론 표현식
-
-    @Column(nullable = false)
-    private Boolean isActive; // 활성화 여부
-
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private boolean enabled;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
 
     @PreUpdate
     protected void onUpdate() {
