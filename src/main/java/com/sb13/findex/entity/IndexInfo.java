@@ -8,8 +8,16 @@ import java.time.*;
 
 @Entity
 @Getter
-@Table(name = "index_info")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(
+        name = "index_info",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_index_info_classification_name",
+                        columnNames = {"index_classification", "index_name"}
+                )
+        }
+)
 public class IndexInfo {
 
     @Id
@@ -26,7 +34,7 @@ public class IndexInfo {
     private int employedItemsCount;
 
     @Column(name = "base_point_in_time", nullable = false)
-    private LocalDateTime basePointInTime;
+    private LocalDate basePointInTime;
 
     @Column(name = "base_index", nullable = false)
     private BigDecimal baseIndex;
