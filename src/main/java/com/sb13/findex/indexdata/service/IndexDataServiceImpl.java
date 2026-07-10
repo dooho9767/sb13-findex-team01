@@ -1,6 +1,5 @@
 package com.sb13.findex.indexdata.service;
 
-import com.sb13.findex.entity.IndexInfo;
 import com.sb13.findex.indexdata.dto.CursorPageResponse;
 import com.sb13.findex.indexdata.dto.IndexDataCreateCommand;
 import com.sb13.findex.indexdata.dto.IndexDataResponse;
@@ -10,7 +9,8 @@ import com.sb13.findex.indexdata.entity.IndexData;
 import com.sb13.findex.indexdata.entity.IndexType;
 import com.sb13.findex.indexdata.mapper.IndexDataMapper;
 import com.sb13.findex.indexdata.repository.IndexDataRepository;
-import com.sb13.findex.repository.IndexInfoRepository;
+import com.sb13.findex.indexinfo.entity.IndexInfo;
+import com.sb13.findex.indexinfo.repository.IndexInfoRepository;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
