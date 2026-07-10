@@ -1,5 +1,6 @@
-package com.sb13.findex.entity;
+package com.sb13.findex.indexinfo.entity;
 
+import com.sb13.findex.sync.entity.SourceType;
 import jakarta.persistence.*;
 import lombok.*;
 

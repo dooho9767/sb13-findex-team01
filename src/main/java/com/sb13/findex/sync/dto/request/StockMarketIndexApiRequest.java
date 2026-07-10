@@ -1,4 +1,4 @@
-package com.sb13.findex.dto.request;
+package com.sb13.findex.sync.dto.request;
 
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;

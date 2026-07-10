@@ -1,6 +1,6 @@
-package com.sb13.findex.repository;
+package com.sb13.findex.sync.repository;
 
-import com.sb13.findex.entity.AutoSyncConfig;
+import com.sb13.findex.sync.entity.AutoSyncConfig;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;

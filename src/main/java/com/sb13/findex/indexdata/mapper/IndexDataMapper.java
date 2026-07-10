@@ -1,6 +1,6 @@
 package com.sb13.findex.indexdata.mapper;
 
-import com.sb13.findex.entity.IndexInfo;
+import com.sb13.findex.indexinfo.entity.IndexInfo;
 import com.sb13.findex.indexdata.dto.IndexDataResponse;
 import com.sb13.findex.indexdata.entity.IndexData;
 

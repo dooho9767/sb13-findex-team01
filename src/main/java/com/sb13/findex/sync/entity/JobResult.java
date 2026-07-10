@@ -1,4 +1,4 @@
-package com.sb13.findex.domain.syncjob;
+package com.sb13.findex.sync.entity;
 
 public enum JobResult {
     SUCCESS, // 성공

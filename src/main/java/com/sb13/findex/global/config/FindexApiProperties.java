@@ -1,4 +1,4 @@
-package com.sb13.findex.config;
+package com.sb13.findex.global.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

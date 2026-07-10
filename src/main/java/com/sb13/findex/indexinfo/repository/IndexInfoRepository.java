@@ -1,6 +1,6 @@
-package com.sb13.findex.repository;
+package com.sb13.findex.indexinfo.repository;
 
-import com.sb13.findex.entity.*;
+import com.sb13.findex.indexinfo.entity.IndexInfo;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.*;

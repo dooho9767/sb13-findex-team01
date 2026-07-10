@@ -1,4 +1,4 @@
-package com.sb13.findex.domain.syncjob;
+package com.sb13.findex.sync.entity;
 
 public enum JobType {
     INDEX_INFO, // 지수 정보

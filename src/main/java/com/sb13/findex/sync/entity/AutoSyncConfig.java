@@ -1,4 +1,4 @@
-package com.sb13.findex.entity;
+package com.sb13.findex.sync.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

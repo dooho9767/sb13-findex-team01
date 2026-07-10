@@ -6,7 +6,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.ComparableExpression;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.sb13.findex.entity.QIndexInfo;
+import com.sb13.findex.indexinfo.entity.QIndexInfo;
 import com.sb13.findex.indexdata.dto.IndexDataSearchCondition;
 import com.sb13.findex.indexdata.dto.IndexDataSortField;
 import com.sb13.findex.indexdata.entity.IndexData;
