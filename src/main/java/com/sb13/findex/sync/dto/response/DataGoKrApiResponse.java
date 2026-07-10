@@ -1,4 +1,4 @@
-package com.sb13.findex.dto.response;
+package com.sb13.findex.sync.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

@@ -1,4 +1,4 @@
-package com.sb13.findex.dto.response;
+package com.sb13.findex.sync.dto.response;
 
 /**
  * 주가지수시세 단일 항목입니다.

@@ -55,7 +55,7 @@ public class IndexDataController {
         return indexDataService.search(condition);
     }
 
-    @GetMapping(value = "/api/index-data/export", produces = "text/csv")
+    @GetMapping(value = "/export", produces = "text/csv")
     public ResponseEntity<byte[]> exportCsv(
             @RequestParam(required = false) Long indexInfoId,
 
