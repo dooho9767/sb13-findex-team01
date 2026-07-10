@@ -49,21 +49,24 @@ public record DataGoKrApiResponse<T>(
     }
 
     public List<T> getItem() {
-        if (response == null) throw new NullPointerException("response is null");
-        if (response.body() == null) throw new NullPointerException("response.body is null");
-        if (response.body().items() == null) throw new NullPointerException("response.body.items is null");
-        if (response.body().items().item() == null) throw new NullPointerException("response.body.items.item is null");
+        if (
+                response == null ||
+                response.body == null ||
+                response.body.items == null ||
+                response.body.items.item == null
+        ) {
+            return List.of();
+        }
 
-        return response.body().items().item();
+        return response.body.items.item;
     }
 
     public String getResultCode() {
-        if (response == null) throw new NullPointerException("response is null");
-        if (response.header() == null) throw new NullPointerException("response.header is null");
-        if (response.header().resultCode() == null)
-            throw new NullPointerException("response.header.resultCode is null");
+        if (response == null || response.header == null) {
+            return null;
+        }
 
-        return response.header().resultCode();
+        return response.header.resultCode;
     }
 
     public Integer getNumOfRows() {
