@@ -1,6 +1,6 @@
-package com.sb13.findex.repository;
+package com.sb13.findex.sync.repository;
 
-import com.sb13.findex.dto.command.IndexInfoKey;
+import com.sb13.findex.sync.dto.command.IndexInfoKey;
 
 import java.util.List;
 

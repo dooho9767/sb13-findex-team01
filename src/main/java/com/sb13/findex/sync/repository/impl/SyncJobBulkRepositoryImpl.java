@@ -1,7 +1,7 @@
-package com.sb13.findex.repository.impl;
+package com.sb13.findex.sync.repository.impl;
 
-import com.sb13.findex.dto.command.IndexInfoKey;
-import com.sb13.findex.repository.SyncJobBulkRepository;
+import com.sb13.findex.sync.dto.command.IndexInfoKey;
+import com.sb13.findex.sync.repository.SyncJobBulkRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
