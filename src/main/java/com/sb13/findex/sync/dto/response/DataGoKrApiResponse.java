@@ -85,6 +85,10 @@ public record DataGoKrApiResponse<T>(
     }
 
     public Integer getTotalPages() {
+        if (response == null || response.body == null) {
+            return null;
+        }
+
         Integer numOfRows = getNumOfRows();
         Integer totalCount = response.body.totalCount;
 
