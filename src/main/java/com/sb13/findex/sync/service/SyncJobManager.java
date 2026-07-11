@@ -116,7 +116,7 @@ public class SyncJobManager {
         List<StockMarketIndex> lists = new ArrayList<>(firstResponse.getItem());
         // 25만건 전부 호출시 1분 소요..
         // 비동기 멀티쓰레드 사용 고려 예정
-        for (int currentPage = pageNo; currentPage <= totalPages; currentPage++) {
+        for (int currentPage = pageNo + 1; currentPage <= totalPages; currentPage++) {
             DataGoKrApiResponse<StockMarketIndex> pageResponse = dataGoKrApiService.getStockMarketIndexList(StockMarketIndexApiRequest.ofPage(numOfRows, currentPage));
 
             if (isResponseError(pageResponse)) {

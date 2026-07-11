@@ -31,10 +31,13 @@ public class SyncJobBulkRepositoryImpl implements SyncJobBulkRepository {
                 info.id,
                 'INDEX_INFO',
                 ?,
-                info.updated_at,
                 CASE
-                    WHEN info.id IS NULL THEN 'SUCCESS'
-                    ELSE 'FAILED'
+                    WHEN info.id IS NULL THEN now()
+                    ELSE info.updated_at
+                END,
+                CASE
+                    WHEN info.id IS NULL THEN 'FAILED'
+                    ELSE 'SUCCESS'
                 END,
                 now(),
                 now()

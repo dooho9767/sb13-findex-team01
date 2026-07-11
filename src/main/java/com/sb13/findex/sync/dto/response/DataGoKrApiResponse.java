@@ -85,14 +85,18 @@ public record DataGoKrApiResponse<T>(
     }
 
     public Integer getTotalPages() {
-        if (
-                getNumOfRows() == null ||
-                response.body.totalCount == null
-        ) {
+        Integer numOfRows = getNumOfRows();
+        Integer totalCount = response.body.totalCount;
+
+        if (numOfRows == null || totalCount == null) {
             return null;
         }
 
-        return response.body.totalCount / getNumOfRows();
+        if (numOfRows <= 0) {
+            throw new IllegalStateException("numOfRows는 0보다 커야 합니다.");
+        }
+
+        return (totalCount + numOfRows - 1) / numOfRows;
     }
 
 }
