@@ -1,7 +1,7 @@
 package com.sb13.findex.indexinfo.service;
 
-import com.sb13.findex.indexinfo.dto.*;
-import com.sb13.findex.indexinfo.entity.*;
+import com.sb13.findex.indexinfo.dto.command.*;
+import com.sb13.findex.indexinfo.dto.response.*;
 
 import java.util.*;
 

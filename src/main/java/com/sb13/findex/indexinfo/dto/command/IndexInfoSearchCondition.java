@@ -1,4 +1,6 @@
-package com.sb13.findex.indexinfo.dto;
+package com.sb13.findex.indexinfo.dto.command;
+
+import com.sb13.findex.indexinfo.dto.request.*;
 
 public record IndexInfoSearchCondition(
         String indexClassification,

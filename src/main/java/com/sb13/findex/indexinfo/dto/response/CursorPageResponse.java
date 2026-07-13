@@ -1,4 +1,4 @@
-package com.sb13.findex.indexinfo.dto;
+package com.sb13.findex.indexinfo.dto.response;
 
 import java.util.*;
 

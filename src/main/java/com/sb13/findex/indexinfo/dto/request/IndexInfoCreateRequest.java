@@ -1,4 +1,4 @@
-package com.sb13.findex.indexinfo.dto;
+package com.sb13.findex.indexinfo.dto.request;
 
 import java.math.*;
 import java.time.*;

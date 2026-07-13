@@ -1,6 +1,6 @@
 package com.sb13.findex.indexinfo.mapper;
 
-import com.sb13.findex.indexinfo.dto.*;
+import com.sb13.findex.indexinfo.dto.response.*;
 import com.sb13.findex.indexinfo.entity.*;
 
 import java.util.*;

@@ -1,6 +1,7 @@
 package com.sb13.findex.indexinfo.service;
 
-import com.sb13.findex.indexinfo.dto.*;
+import com.sb13.findex.indexinfo.dto.command.*;
+import com.sb13.findex.indexinfo.dto.response.*;
 import com.sb13.findex.indexinfo.entity.*;
 import com.sb13.findex.indexinfo.mapper.*;
 import com.sb13.findex.indexinfo.repository.*;
@@ -68,15 +69,15 @@ public class IndexInfoServiceImpl implements IndexInfoService {
                     "이미 존재하는 지수 정보입니다."
             );
         }
-        IndexInfo indexInfo = IndexInfo.builder()
-                .indexClassification(indexClassification)
-                .indexName(indexName)
-                .employedItemsCount(command.employedItemsCount())
-                .basePointInTime(command.basePointInTime())
-                .baseIndex(command.baseIndex())
-                .sourceType(SourceType.USER)
-                .favorite(command.favorite())
-                .build();
+        IndexInfo indexInfo = IndexInfo.create(
+                indexClassification,
+                indexName,
+                command.employedItemsCount(),
+                command.basePointInTime(),
+                command.baseIndex(),
+                SourceType.USER,
+                command.favorite()
+        );
 
         IndexInfo savedIndexInfo = indexInfoRepository.save(indexInfo);
 

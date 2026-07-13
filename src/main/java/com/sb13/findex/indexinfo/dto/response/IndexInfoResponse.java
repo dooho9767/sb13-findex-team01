@@ -1,6 +1,5 @@
-package com.sb13.findex.indexinfo.dto;
+package com.sb13.findex.indexinfo.dto.response;
 
-import com.sb13.findex.indexdata.entity.*;
 import com.sb13.findex.sync.entity.*;
 
 import java.math.*;
