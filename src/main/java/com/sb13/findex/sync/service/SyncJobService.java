@@ -14,6 +14,6 @@ public interface SyncJobService {
 
     void indexDataSaveAll(List<IndexDataOpenApiCommand> dataOpenApiCommands, String worker);
 
-    void indexInfoSaveAll(String worker, List<IndexInfoCreateCommand> infoCreateCommands);
+    void indexInfoSaveAll( List<IndexInfoCreateCommand> infoCreateCommands, String worker);
 
 }

@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public record IndexDataSyncCommand(
-      List<Integer> indexInfoIds,
+      List<Long> indexInfoIds,
       LocalDate baseDateFrom,
       LocalDate baseDateTo
 ) {

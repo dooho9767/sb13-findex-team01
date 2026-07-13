@@ -4,6 +4,7 @@ package com.sb13.findex.sync.service;
 import com.sb13.findex.indexdata.dto.command.IndexDataOpenApiCommand;
 import com.sb13.findex.indexinfo.dto.command.IndexInfoCreateCommand;
 import com.sb13.findex.indexinfo.entity.IndexInfo;
+import com.sb13.findex.indexinfo.service.IndexInfoReader;
 import com.sb13.findex.sync.dto.command.IndexDataSyncCommand;
 import com.sb13.findex.sync.dto.command.IndexInfoKey;
 import com.sb13.findex.sync.dto.request.StockMarketIndexApiRequest;
@@ -36,6 +37,8 @@ public class SyncJobManager {
 
     private final SyncJobService syncJobService;
 
+    private final IndexInfoReader indexInfoReader;
+
     public void syncIndexInfos() {
         DataGoKrApiResponse<StockMarketIndex> response = dataGoKrApiService.getStockMarketIndexList();
 
@@ -59,21 +62,16 @@ public class SyncJobManager {
 
         String worker = ipAddressService.getClientIp();
 
-        syncJobService.indexInfoSaveAll(worker, infoCreateCommands);
+        syncJobService.indexInfoSaveAll( infoCreateCommands, worker);
 
     }
 
     public void syncIndexDataList(IndexDataSyncCommand command, String worker) {
-        List<Integer> indexInfoIds = command.indexInfoIds();
+        List<Long> indexInfoIds = command.indexInfoIds();
         LocalDate baseDateFrom = command.baseDateFrom();
         LocalDate baseDateTo = command.baseDateTo();
 
-        /*
-         * TODO
-         *  1. indexInfo의 목록 EX) indexInfoService.getIndexInfoByIds
-         *  - indexInfoService 가 공유되면 작업 예정입니다.
-         */
-        List<IndexInfo> indexInfos = new ArrayList<>();
+        List<IndexInfo> indexInfos = indexInfoReader.findIndexInfosByIds(indexInfoIds);
 
         Map<IndexInfoKey, IndexInfo> infoKeyIndexInfoMap = indexInfos.stream()
                 .collect(Collectors.toMap(this::createIndexInfoKey, Function.identity()));

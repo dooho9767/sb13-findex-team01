@@ -91,8 +91,9 @@ public class SyncJobServiceImpl implements SyncJobService {
 
     }
 
+    @Transactional
     @Override
-    public void indexInfoSaveAll(String worker, List<IndexInfoCreateCommand> infoCreateCommands) {
+    public void indexInfoSaveAll(List<IndexInfoCreateCommand> infoCreateCommands, String worker) {
 
         // TODO OPEN_API 저장로직 필요.
         //  - indexInfoService.saveAll(infoCreateCommands)?
