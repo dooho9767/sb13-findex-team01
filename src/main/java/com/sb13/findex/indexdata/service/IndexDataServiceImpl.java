@@ -38,36 +38,15 @@ public class IndexDataServiceImpl implements IndexDataService {
         IndexInfo indexInfo = indexInfoRepository.findById(command.indexInfoId())
             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 지수 정보입니다. ID: " + command.indexInfoId()));
 
-        //기존 데이터가 유저인지 오픈 데이터인지 알 수 있도록
-        Optional<IndexData> existingData =
-                indexDataRepository.findByIndexInfo_IdAndBaseDate(
-                        command.indexInfoId(), command.baseDate());
+        // 기존 데이터가 있으면 생성 요청은 실패 처리
 
-        //기존 데이터가 있으면 타입에 따라 처리
-        if(existingData.isPresent()){
-            //기존 데이터가 USER면 중복 생성이므로 에러
-            //기존데이터가 OPEN_API면 사용자가 직접등록한 값으로 갱신
-            //updateByUser()안에서 indexType이 User로 바뀜
-            IndexData indexData = existingData.get();
-
-            if(indexData.isUserData()){
-                throw new IllegalArgumentException("해당 날짜의 지수 데이터가 이미 존재합니다.");
-            }
-
-            indexData.updateByUser(
-                    command.marketPrice(),
-                    command.closingPrice(),
-                    command.highPrice(),
-                    command.lowPrice(),
-                    command.versus(),
-                    command.fluctuationRate(),
-                    command.tradingQuantity(),
-                    command.tradingPrice(),
-                    command.marketTotalAmount()
-            );
-
-            return IndexDataMapper.toResponse(indexData);
+        if (indexDataRepository.existsByIndexInfo_IdAndBaseDate(
+                command.indexInfoId(),
+                command.baseDate()
+        )) {
+            throw new IllegalArgumentException("해당 날짜의 지수 데이터가 이미 존재합니다.");
         }
+
         IndexData indexData = IndexData.createUserData(indexInfo, command);
         IndexData savedData = indexDataRepository.save(indexData);
 
@@ -115,6 +94,7 @@ public class IndexDataServiceImpl implements IndexDataService {
 
         indexDataRepository.save(indexData);
     }
+
     @Override
     public CursorPageResponse<IndexDataResponse> search(IndexDataSearchCondition condition) {
         int size = getSize(condition.size());
