@@ -312,5 +312,16 @@ public class IndexInfoRepositoryImpl
 
         return size;
     }
+
+    @Override
+    public long countIndexInfo(IndexInfoSearchRequest request) {
+        Long count = queryFactory
+                .select(indexInfo.count())
+                .from(indexInfo)
+                .where(filterCondition(request))
+                .fetchOne();
+
+        return count == null ? 0L : count;
+    }
 }
 

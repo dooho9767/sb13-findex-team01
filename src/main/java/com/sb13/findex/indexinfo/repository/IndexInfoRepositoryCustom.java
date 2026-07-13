@@ -12,6 +12,8 @@ public interface IndexInfoRepositoryCustom {
     // 정렬 조건: 지수 분류명, 지수명, 채용 종목 수 중 하나를 선택해 정렬 할 수 있습니다.
     List<IndexInfo> searchIndexInfo(IndexInfoSearchRequest request);
 
+    long countIndexInfo(IndexInfoSearchRequest request);
+
 
 
 
