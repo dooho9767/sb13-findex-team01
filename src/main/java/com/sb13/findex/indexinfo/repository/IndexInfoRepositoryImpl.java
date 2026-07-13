@@ -4,9 +4,10 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.*;
 import com.querydsl.core.types.dsl.*;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.sb13.findex.indexinfo.dto.*;
+import com.sb13.findex.indexinfo.dto.command.*;
+import com.sb13.findex.indexinfo.dto.response.*;
 import com.sb13.findex.indexinfo.entity.*;
-import com.sb13.findex.indexinfo.entity.*;
+import com.sb13.findex.indexinfo.utli.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -16,8 +17,6 @@ import java.util.List;
 @Repository
 public class IndexInfoRepositoryImpl
         implements IndexInfoRepositoryCustom {
-
-    private static final int DEFAULT_SIZE = 10;
 
     private final JPAQueryFactory queryFactory;
 
@@ -30,19 +29,20 @@ public class IndexInfoRepositoryImpl
      */
     @Override
     public List<IndexInfo> searchIndexInfo(
-            IndexInfoSearchRequest request
+            IndexInfoSearchCondition condition
     ) {
-        int size = resolveSize(request.size());
+        int size =
+                IndexInfoPaginationUtils.resolveSize(condition.size());
 
         return queryFactory
                 .selectFrom(indexInfo)
                 .where(
-                        filterCondition(request),
-                        cursorCondition(request)
+                        filterCondition(condition),
+                        cursorCondition(condition)
                 )
                 .orderBy(
-                        sortOrder(request),
-                        idOrder(request)
+                        sortOrder(condition),
+                        idOrder(condition)
                 )
                 .limit(size + 1)
                 .fetch();
@@ -50,33 +50,33 @@ public class IndexInfoRepositoryImpl
 
     // 검색 조건
     private BooleanBuilder filterCondition(
-            IndexInfoSearchRequest request
+            IndexInfoSearchCondition condition
     ) {
         BooleanBuilder builder = new BooleanBuilder();
 
-        if (request.indexClassification() != null
-                && !request.indexClassification().isBlank()) {
+        if (condition.indexClassification() != null
+                && !condition.indexClassification().isBlank()) {
 
             builder.and(
                     indexInfo.indexClassification.contains(
-                            request.indexClassification().trim()
+                            condition.indexClassification().trim()
                     )
             );
         }
 
-        if (request.indexName() != null
-                && !request.indexName().isBlank()) {
+        if (condition.indexName() != null
+                && !condition.indexName().isBlank()) {
 
             builder.and(
                     indexInfo.indexName.contains(
-                            request.indexName().trim()
+                            condition.indexName().trim()
                     )
             );
         }
 
-        if (request.favorite() != null) {
+        if (condition.favorite() != null) {
             builder.and(
-                    indexInfo.favorite.eq(request.favorite())
+                    indexInfo.favorite.eq(condition.favorite())
             );
         }
 
@@ -89,37 +89,37 @@ public class IndexInfoRepositoryImpl
      * 커서 조건을 적용하지 않습니다.
      */
     private BooleanBuilder cursorCondition(
-            IndexInfoSearchRequest request
+            IndexInfoSearchCondition condition
     ) {
-        if (!hasCursor(request)) {
+        if (!hasCursor(condition)) {
             return null;
         }
 
         IndexInfoSortField sortField =
-                getSortField(request.sortField());
+                IndexInfoSortField.from(condition.sortField());
 
         boolean ascending =
-                isAscending(request.sortDirection());
+                isAscending(condition.sortDirection());
 
         return switch (sortField) {
             case INDEX_CLASSIFICATION -> compareCursor(
                     indexInfo.indexClassification,
-                    request.cursor(),
-                    request.idAfter(),
+                    condition.cursor(),
+                    condition.idAfter(),
                     ascending
             );
 
             case INDEX_NAME -> compareCursor(
                     indexInfo.indexName,
-                    request.cursor(),
-                    request.idAfter(),
+                    condition.cursor(),
+                    condition.idAfter(),
                     ascending
             );
 
             case EMPLOYED_ITEMS_COUNT -> compareCursor(
                     indexInfo.employedItemsCount,
-                    Integer.valueOf(request.cursor()),
-                    request.idAfter(),
+                    Integer.valueOf(condition.cursor()),
+                    condition.idAfter(),
                     ascending
             );
         };
@@ -202,12 +202,12 @@ public class IndexInfoRepositoryImpl
      * OrderSpecifier를 반환합니다.
      */
     private OrderSpecifier<?> sortOrder(
-            IndexInfoSearchRequest request
+            IndexInfoSearchCondition condition
     ) {
         IndexInfoSortField sortField =
-                getSortField(request.sortField());
+                IndexInfoSortField.from(condition.sortField());
 
-        Order order = isAscending(request.sortDirection())
+        Order order = isAscending(condition.sortDirection())
                 ? Order.ASC
                 : Order.DESC;
 
@@ -237,9 +237,9 @@ public class IndexInfoRepositoryImpl
      * id를 보조 정렬 기준으로 사용합니다.
      */
     private OrderSpecifier<Long> idOrder(
-            IndexInfoSearchRequest request
+            IndexInfoSearchCondition condition
     ) {
-        Order order = isAscending(request.sortDirection())
+        Order order = isAscending(condition.sortDirection())
                 ? Order.ASC
                 : Order.DESC;
 
@@ -247,19 +247,6 @@ public class IndexInfoRepositoryImpl
                 order,
                 indexInfo.id
         );
-    }
-
-    /**
-     * sortField가 없으면 indexName을 기본 정렬 필드로 사용합니다.
-     */
-    private IndexInfoSortField getSortField(
-            String sortField
-    ) {
-        if (sortField == null || sortField.isBlank()) {
-            return IndexInfoSortField.INDEX_NAME;
-        }
-
-        return IndexInfoSortField.from(sortField);
     }
 
     /**
@@ -293,24 +280,36 @@ public class IndexInfoRepositoryImpl
      * 다음 페이지 조회로 판단합니다.
      */
     private boolean hasCursor(
-            IndexInfoSearchRequest request
+            IndexInfoSearchCondition condition
     ) {
-        return request.cursor() != null
-                && !request.cursor().isBlank()
-                && request.idAfter() != null;
+        return condition.cursor() != null
+                && !condition.cursor().isBlank()
+                && condition.idAfter() != null;
     }
 
-    /**
-     * size가 없거나 0 이하이면 기본 크기 10을 사용합니다.
-     */
-    private int resolveSize(
-            Integer size
-    ) {
-        if (size == null || size <= 0) {
-            return DEFAULT_SIZE;
-        }
+    @Override
+    public long countIndexInfo(IndexInfoSearchCondition condition) {
+        Long count = queryFactory
+                .select(indexInfo.count())
+                .from(indexInfo)
+                .where(filterCondition(condition))
+                .fetchOne();
 
-        return size;
+        return count == null ? 0L : count;
+    }
+
+    @Override
+    public List<IndexInfoSummaryResponse> findAllSummaries() {
+        return queryFactory
+                .select(Projections.constructor(
+                        IndexInfoSummaryResponse.class,
+                        indexInfo.id,
+                        indexInfo.indexClassification,
+                        indexInfo.indexName
+                        ))
+                .from(indexInfo)
+                .orderBy(indexInfo.indexName.asc())
+                .fetch();
     }
 }
 

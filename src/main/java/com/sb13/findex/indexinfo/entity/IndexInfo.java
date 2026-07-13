@@ -22,6 +22,25 @@ import java.time.*;
 )
 public class IndexInfo extends BaseEntity {
 
+    @Builder(access = AccessLevel.PRIVATE)
+    private IndexInfo(
+            String indexClassification,
+            String indexName,
+            int employedItemsCount,
+            LocalDate basePointInTime,
+            BigDecimal baseIndex,
+            SourceType sourceType,
+            boolean favorite
+    ) {
+        this.indexClassification = indexClassification;
+        this.indexName = indexName;
+        this.employedItemsCount = employedItemsCount;
+        this.basePointInTime = basePointInTime;
+        this.baseIndex = baseIndex;
+        this.sourceType = sourceType;
+        this.favorite = favorite;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -32,7 +51,7 @@ public class IndexInfo extends BaseEntity {
     @Column(name = "index_name", length = 100, nullable = false)
     private String indexName;
 
-    @Column(name = "employed_items_count")
+    @Column(name = "employed_items_count", nullable = false)
     private int employedItemsCount;
 
     @Column(name = "base_point_in_time", nullable = false)
@@ -45,43 +64,42 @@ public class IndexInfo extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private SourceType sourceType;
 
-    @Column(name = "favorite")
+    @Column(name = "favorite", nullable = false)
     private boolean favorite;
 
+    public void update(
+            Integer employedItemsCount,
+            LocalDate basePointInTime,
+            BigDecimal baseIndex,
+            Boolean favorite
+    ) {
+        if(employedItemsCount != null) this.employedItemsCount = employedItemsCount;
 
-    public boolean isUserSource() {
-        return this.sourceType == SourceType.USER;
+        if (basePointInTime != null) this.basePointInTime = basePointInTime;
+
+        if (baseIndex != null) this.baseIndex = baseIndex;
+
+        if (favorite != null) this.favorite = favorite;
     }
 
-    public boolean isOpenApiSource() {
-        return this.sourceType == SourceType.OPEN_API;
-    }
-
-    public void updateByUser(
+    public static IndexInfo create(
+            String indexClassification,
+            String indexName,
             int employedItemsCount,
             LocalDate basePointInTime,
             BigDecimal baseIndex,
+            SourceType sourceType,
             boolean favorite
     ) {
-        this.employedItemsCount = employedItemsCount;
-        this.basePointInTime = basePointInTime;
-        this.baseIndex = baseIndex;
-        this.favorite = favorite;
-        this.sourceType = SourceType.USER;
-    }
-
-    public void updateByOpenApi(
-            int employedItemsCount,
-            LocalDate basePointInTime,
-            BigDecimal baseIndex
-    ) {
-        if (!isOpenApiSource()) {
-            return;
-        }
-
-        this.employedItemsCount = employedItemsCount;
-        this.basePointInTime = basePointInTime;
-        this.baseIndex = baseIndex;
+        return IndexInfo.builder()
+                .indexClassification(indexClassification)
+                .indexName(indexName)
+                .employedItemsCount(employedItemsCount)
+                .basePointInTime(basePointInTime)
+                .baseIndex(baseIndex)
+                .sourceType(sourceType)
+                .favorite(favorite)
+                .build();
     }
 
 }

@@ -8,4 +8,5 @@ import org.springframework.stereotype.*;
 @Repository
 public interface IndexInfoRepository extends IndexInfoRepositoryCustom, JpaRepository<IndexInfo, Long> {
 
+    boolean existsByIndexClassificationAndIndexName(String indexClassification, String indexName);
 }
