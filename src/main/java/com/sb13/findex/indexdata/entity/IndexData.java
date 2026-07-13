@@ -1,6 +1,7 @@
 package com.sb13.findex.indexdata.entity;
 
 import com.sb13.findex.global.entity.BaseEntity;
+import com.sb13.findex.indexdata.dto.command.IndexDataCreateCommand;
 import com.sb13.findex.indexinfo.entity.IndexInfo;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -94,30 +95,21 @@ public class IndexData extends BaseEntity {
     //사용자 등록용 생성 메서드
   public static IndexData createUserData(
             IndexInfo indexInfo,
-            LocalDate baseDate,
-            BigDecimal marketPrice,
-            BigDecimal closingPrice,
-            BigDecimal highPrice,
-            BigDecimal lowPrice,
-            BigDecimal versus,
-            BigDecimal fluctuationRate,
-            Long tradingQuantity,
-            Long tradingPrice,
-            Long marketTotalAmount
+            IndexDataCreateCommand command
   ) {
         IndexData indexData = new IndexData();
         indexData.indexInfo = indexInfo;
-        indexData.baseDate = baseDate;
+        indexData.baseDate = command.baseDate();
         indexData.indexType = IndexType.USER;
-        indexData.marketPrice = marketPrice;
-        indexData.closingPrice = closingPrice;
-        indexData.highPrice = highPrice;
-        indexData.lowPrice = lowPrice;
-        indexData.versus = versus;
-        indexData.fluctuationRate = fluctuationRate;
-        indexData.tradingQuantity = tradingQuantity;
-        indexData.tradingPrice = tradingPrice;
-        indexData.marketTotalAmount = marketTotalAmount;
+        indexData.marketPrice = command.marketPrice();
+        indexData.closingPrice = command.closingPrice();
+        indexData.highPrice = command.highPrice();
+        indexData.lowPrice = command.lowPrice();
+        indexData.versus = command.versus();
+        indexData.fluctuationRate = command.fluctuationRate();
+        indexData.tradingQuantity = command.tradingQuantity();
+        indexData.tradingPrice = command.tradingPrice();
+        indexData.marketTotalAmount = command.marketTotalAmount();
         return indexData;
   }
   //openAPI로 새로 들어온 데이터는 OPEN_API로 저장

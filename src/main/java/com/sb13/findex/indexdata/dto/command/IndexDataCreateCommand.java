@@ -1,4 +1,6 @@
-package com.sb13.findex.indexdata.dto;
+package com.sb13.findex.indexdata.dto.command;
+
+import com.sb13.findex.indexdata.dto.request.IndexDataCreateRequest;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

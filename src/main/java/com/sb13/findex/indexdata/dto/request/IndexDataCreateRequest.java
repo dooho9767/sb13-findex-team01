@@ -1,4 +1,4 @@
-package com.sb13.findex.indexdata.dto;
+package com.sb13.findex.indexdata.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;

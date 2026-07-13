@@ -1,10 +1,11 @@
 package com.sb13.findex.indexdata.service;
 
-import com.sb13.findex.indexdata.dto.CursorPageResponse;
-import com.sb13.findex.indexdata.dto.IndexDataCreateCommand;
-import com.sb13.findex.indexdata.dto.IndexDataResponse;
-import com.sb13.findex.indexdata.dto.IndexDataSearchCondition;
-import com.sb13.findex.indexdata.dto.IndexDataSortField;
+import com.sb13.findex.indexdata.dto.command.IndexDataOpenApiCommand;
+import com.sb13.findex.indexdata.dto.response.CursorPageResponse;
+import com.sb13.findex.indexdata.dto.command.IndexDataCreateCommand;
+import com.sb13.findex.indexdata.dto.response.IndexDataResponse;
+import com.sb13.findex.indexdata.dto.condition.IndexDataSearchCondition;
+import com.sb13.findex.indexdata.dto.condition.IndexDataSortField;
 import com.sb13.findex.indexdata.entity.IndexData;
 import com.sb13.findex.indexdata.mapper.IndexDataMapper;
 import com.sb13.findex.indexdata.repository.IndexDataRepository;
@@ -39,15 +40,69 @@ public class IndexDataServiceImpl implements IndexDataService {
         IndexInfo indexInfo = indexInfoRepository.findById(command.indexInfoId())
             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 지수 정보입니다. ID: " + command.indexInfoId()));
 
-        if (indexDataRepository.existsByIndexInfo_IdAndBaseDate(
-                command.indexInfoId(),
-                command.baseDate()
-        )) {
-            throw new IllegalArgumentException("해당 날짜의 지수 데이터가 이미 존재합니다.");
+        //기존 데이터가 유저인지 오픈 데이터인지 알 수 있도록
+        Optional<IndexData> exisingData =
+                indexDataRepository.findByIndexInfo_IdAndBaseDate(
+                        command.indexInfoId(), command.baseDate());
+
+        //기존 데이터가 있으면 타입에 따라 처리
+        if(exisingData.isPresent()){
+            //기존 데이터가 USER면 중복 생성이므로 에러
+            //기존데이터가 OPEN_API면 사용자가 직접등록한 값으로 갱신
+            //updateByUser()안에서 indexType이 User로 바뀜
+            IndexData indexData = exisingData.get();
+
+            if(indexData.isUserData()){
+                throw new IllegalArgumentException("해당 날짜의 지수 데이터가 이미 존재합니다.");
+            }
+
+            indexData.updateByUser(
+                    command.marketPrice(),
+                    command.closingPrice(),
+                    command.highPrice(),
+                    command.lowPrice(),
+                    command.versus(),
+                    command.fluctuationRate(),
+                    command.tradingQuantity(),
+                    command.tradingPrice(),
+                    command.marketTotalAmount()
+            );
+
+            return IndexDataMapper.toResponse(indexData);
+        }
+        IndexData indexData = IndexData.createUserData(indexInfo, command);
+        IndexData savedData = indexDataRepository.save(indexData);
+
+        return IndexDataMapper.toResponse(savedData);
+    }
+
+    @Override
+    @Transactional
+    public void saveOrUpdateOpenApiData(IndexDataOpenApiCommand command) {
+        Optional<IndexData> existingData =
+                indexDataRepository.findByIndexInfo_IdAndBaseDate(
+                        command.indexInfo().getId(), command.baseDate());
+
+        if (existingData.isPresent()) {
+            IndexData indexData = existingData.get();
+
+            indexData.updateByOpenApi(
+                    command.marketPrice(),
+                    command.closingPrice(),
+                    command.highPrice(),
+                    command.lowPrice(),
+                    command.versus(),
+                    command.fluctuationRate(),
+                    command.tradingQuantity(),
+                    command.tradingPrice(),
+                    command.marketTotalAmount()
+            );
+
+            return;
         }
 
-        IndexData indexData = IndexData.createUserData(
-                indexInfo,
+        IndexData indexData = IndexData.createOpenApiData(
+                command.indexInfo(),
                 command.baseDate(),
                 command.marketPrice(),
                 command.closingPrice(),
@@ -58,65 +113,6 @@ public class IndexDataServiceImpl implements IndexDataService {
                 command.tradingQuantity(),
                 command.tradingPrice(),
                 command.marketTotalAmount()
-        );
-        IndexData savedData = indexDataRepository.save(indexData);
-
-        return IndexDataMapper.toResponse(savedData);
-    }
-
-
-    /*
-    * Repository에서 size보다 1개 더 조회한 뒤,
-    *  Service에서 실제 응답 데이터는 size만큼만 자릅니다.
-    초과 데이터가 있으면 hasNext를 true로 설정
-    * */
-    @Transactional
-    public void saveOrUpdateOpenApiData(
-            IndexInfo indexInfo,
-            LocalDate baseDate,
-            BigDecimal marketPrice,
-            BigDecimal closingPrice,
-            BigDecimal highPrice,
-            BigDecimal lowPrice,
-            BigDecimal versus,
-            BigDecimal fluctuationRate,
-            Long tradingQuantity,
-            Long tradingPrice,
-            Long marketTotalAmount
-    ) {
-        Optional<IndexData> existingData =
-                indexDataRepository.findByIndexInfo_IdAndBaseDate(indexInfo.getId(), baseDate);
-
-        if (existingData.isPresent()) {
-            IndexData indexData = existingData.get();
-
-            indexData.updateByOpenApi(
-                    marketPrice,
-                    closingPrice,
-                    highPrice,
-                    lowPrice,
-                    versus,
-                    fluctuationRate,
-                    tradingQuantity,
-                    tradingPrice,
-                    marketTotalAmount
-            );
-
-            return;
-        }
-
-        IndexData indexData = IndexData.createOpenApiData(
-                indexInfo,
-                baseDate,
-                marketPrice,
-                closingPrice,
-                highPrice,
-                lowPrice,
-                versus,
-                fluctuationRate,
-                tradingQuantity,
-                tradingPrice,
-                marketTotalAmount
         );
 
         indexDataRepository.save(indexData);
