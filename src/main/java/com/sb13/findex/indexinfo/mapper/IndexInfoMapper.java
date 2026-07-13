@@ -28,17 +28,4 @@ public class IndexInfoMapper {
                 .toList();
     }
 
-    public static IndexInfoSummaryResponse toSummeryResponse(IndexInfo indexInfo) {
-        return  new IndexInfoSummaryResponse(
-                indexInfo.getId(),
-                indexInfo.getIndexClassification(),
-                indexInfo.getIndexName()
-        );
-    }
-
-    public static List<IndexInfoSummaryResponse> toSummeryResponseList(List<IndexInfo> indexInfoList) {
-        return indexInfoList.stream()
-                .map(IndexInfoMapper::toSummeryResponse)
-                .toList();
-    }
 }

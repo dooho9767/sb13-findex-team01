@@ -4,6 +4,7 @@ import com.sb13.findex.indexinfo.dto.*;
 import com.sb13.findex.indexinfo.entity.*;
 import com.sb13.findex.indexinfo.mapper.*;
 import com.sb13.findex.indexinfo.repository.*;
+import com.sb13.findex.indexinfo.utli.*;
 import com.sb13.findex.sync.entity.*;
 import lombok.*;
 import org.springframework.stereotype.*;
@@ -15,16 +16,14 @@ import java.util.*;
 @RequiredArgsConstructor
 public class IndexInfoServiceImpl implements IndexInfoService {
 
-    private static final int DEFAULT_SIZE = 10;
-
     private final IndexInfoRepository indexInfoRepository;
 
     @Override
-    public CursorPageResponse<IndexInfoResponse> search(IndexInfoSearchRequest request) {
-        int size =getSize(request.size());
+    public CursorPageResponse<IndexInfoResponse> search(IndexInfoSearchCondition condition) {
+        int size = IndexInfoPaginationUtils.resolveSize(condition.size());
 
         List<IndexInfo> found =
-                indexInfoRepository.searchIndexInfo(request);
+                indexInfoRepository.searchIndexInfo(condition);
 
         boolean hasNext = found.size() > size;
 
@@ -34,14 +33,14 @@ public class IndexInfoServiceImpl implements IndexInfoService {
 
         List<IndexInfoResponse> responses = IndexInfoMapper.toResponseList(content);
 
-        long totalElements = indexInfoRepository.countIndexInfo(request);
+        long totalElements = indexInfoRepository.countIndexInfo(condition);
 
         String nextCursor = null;
         Long nextIdAfter = null;
 
         if(hasNext && !content.isEmpty()) {
             IndexInfo last = content.get(content.size() - 1);
-            nextCursor = getCursorValue(last, request.sortField());
+            nextCursor = getCursorValue(last, condition.sortField());
             nextIdAfter = last.getId();
         }
 
@@ -57,23 +56,26 @@ public class IndexInfoServiceImpl implements IndexInfoService {
 
     @Override
     @Transactional
-    public IndexInfoResponse create(IndexInfoCreateRequest request) {
+    public IndexInfoResponse create(IndexInfoCreateCommand command) {
+
+        String indexClassification = command.indexClassification().strip();
+        String indexName = command.indexName().strip();
+
         if(indexInfoRepository.existsByIndexClassificationAndIndexName(
-                request.inedxClassification(),
-                request.indexName()
+                indexClassification, indexName
         )) {
             throw new IllegalArgumentException(
                     "이미 존재하는 지수 정보입니다."
             );
         }
         IndexInfo indexInfo = IndexInfo.builder()
-                .indexClassification(request.inedxClassification())
-                .indexName(request.indexName())
-                .employedItemsCount(request.employedItemsCount())
-                .basePointInTime(request.basePointInTime())
-                .baseIndex(request.baseIndex())
+                .indexClassification(indexClassification)
+                .indexName(indexName)
+                .employedItemsCount(command.employedItemsCount())
+                .basePointInTime(command.basePointInTime())
+                .baseIndex(command.baseIndex())
                 .sourceType(SourceType.USER)
-                .favorite(request.favorite())
+                .favorite(command.favorite())
                 .build();
 
         IndexInfo savedIndexInfo = indexInfoRepository.save(indexInfo);
@@ -91,15 +93,15 @@ public class IndexInfoServiceImpl implements IndexInfoService {
 
     @Override
     @Transactional
-    public IndexInfoResponse update(Long id, IndexInfoUpdateRequest request) {
+    public IndexInfoResponse update(Long id, IndexInfoUpdateCommand command) {
         IndexInfo indexInfo = indexInfoRepository.findById(id)
                 .orElseThrow(()-> new IllegalArgumentException("존재하지 않는 지수 정보입니다. ID= " + id));
 
         indexInfo.update(
-                request.employedItemsCount(),
-                request.basePointInTime(),
-                request.baseIndex(),
-                request.favorite()
+                command.employedItemsCount(),
+                command.basePointInTime(),
+                command.baseIndex(),
+                command.favorite()
         );
 
         return IndexInfoMapper.toResponse(indexInfoRepository.save(indexInfo));
@@ -111,41 +113,23 @@ public class IndexInfoServiceImpl implements IndexInfoService {
 
         IndexInfo indexInfo = indexInfoRepository.findById(id)
                 .orElseThrow(()-> new IllegalArgumentException(
-                        "존제하지 않는 지수의 정보입니다. ID: " + id));
+                        "존재하지 않는 지수 정보입니다. ID: " + id));
 
         indexInfoRepository.delete(indexInfo);
     }
 
     @Override
     public List<IndexInfoSummaryResponse> findSummaries() {
-        List<IndexInfo> indexInfos = indexInfoRepository.findAll();
-
-        return IndexInfoMapper.toSummeryResponseList(indexInfos);
-    }
-
-    private int getSize(Integer size) {
-        if (size == null || size <= 0) {
-            return DEFAULT_SIZE;
-        }
-
-        return size;
+        return indexInfoRepository.findAllSummaries();
     }
 
     private String getCursorValue(IndexInfo indexInfo, String sortFieldValue) {
-        IndexInfoSortField sortField = getSortField(sortFieldValue);
+        IndexInfoSortField sortField = IndexInfoSortField.from(sortFieldValue);
 
         return switch (sortField) {
             case INDEX_CLASSIFICATION -> indexInfo.getIndexClassification();
             case INDEX_NAME -> indexInfo.getIndexName();
             case EMPLOYED_ITEMS_COUNT -> String.valueOf(indexInfo.getEmployedItemsCount());
         };
-    }
-
-    private IndexInfoSortField getSortField(String sortField) {
-        if (sortField == null || sortField.isBlank()) {
-            return IndexInfoSortField.INDEX_NAME;
-        }
-
-        return IndexInfoSortField.from(sortField);
     }
 }

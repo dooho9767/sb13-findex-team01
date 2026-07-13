@@ -9,12 +9,12 @@ public interface IndexInfoService {
 
     // 지수 정보 목록 조회
     CursorPageResponse<IndexInfoResponse> search(
-            IndexInfoSearchRequest request
+            IndexInfoSearchCondition condition
     );
 
     // 지수 정보 등록
     IndexInfoResponse create(
-            IndexInfoCreateRequest request
+            IndexInfoCreateCommand command
     );
 
     // 지수 정보 상세 조회
@@ -25,7 +25,7 @@ public interface IndexInfoService {
     // 지수 정보 수정
     IndexInfoResponse update(
             Long id,
-            IndexInfoUpdateRequest request
+            IndexInfoUpdateCommand command
     );
 
     // 지수 정보 삭제

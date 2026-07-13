@@ -4,7 +4,7 @@ import java.math.*;
 import java.time.*;
 
 public record IndexInfoCreateRequest(
-        String inedxClassification,
+        String indexClassification,
         String indexName,
         int employedItemsCount,
         LocalDate basePointInTime,
