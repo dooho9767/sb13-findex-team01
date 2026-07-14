@@ -7,16 +7,20 @@ import java.math.*;
 import java.time.*;
 
 public record IndexInfoCreateRequest(
-        @NotBlank
+        @NotBlank(message = "지수 분류명은 필수입니다.")
         String indexClassification,
-        @NotBlank
+
+        @NotBlank(message = "지수명은 필수입니다.")
         String indexName,
-        @Positive
+
+        @Positive(message = "편입 종목 수는 0보다 커야 합니다.")
         int employedItemsCount,
-        @NotNull
+
+        @NotNull(message = "기준 시점은 필수입니다.")
         LocalDate basePointInTime,
-        @Positive
-        @NotNull
+
+        @NotNull(message = "기준 지수는 필수입니다.")
+        @Positive(message = "기준 지수는 0보다 커야 합니다.")
         BigDecimal baseIndex,
         boolean favorite
 ) {

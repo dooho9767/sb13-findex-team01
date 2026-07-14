@@ -19,7 +19,7 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/index-infos")
 @RequiredArgsConstructor
-public class IndexInfoController {
+public class IndexInfoController implements IndexInfoApi {
 
     private final IndexInfoService indexInfoService;
 
