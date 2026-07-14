@@ -1,6 +1,11 @@
 package com.sb13.findex.sync.service;
 
 
+import com.sb13.findex.indexdata.dto.command.IndexDataOpenApiCommand;
+import com.sb13.findex.indexinfo.dto.command.IndexInfoCreateCommand;
+import com.sb13.findex.indexinfo.entity.IndexInfo;
+import com.sb13.findex.indexinfo.service.IndexInfoReader;
+import com.sb13.findex.sync.dto.command.IndexDataSyncCommand;
 import com.sb13.findex.sync.dto.command.IndexInfoKey;
 import com.sb13.findex.sync.dto.request.StockMarketIndexApiRequest;
 import com.sb13.findex.sync.dto.response.DataGoKrApiResponse;
@@ -30,6 +35,10 @@ public class SyncJobManager {
 
     private final Executor externalApiExecutor;
 
+    private final SyncJobService syncJobService;
+
+    private final IndexInfoReader indexInfoReader;
+
     public void syncIndexInfos() {
         DataGoKrApiResponse<StockMarketIndex> response = dataGoKrApiService.getStockMarketIndexList();
 
@@ -38,30 +47,56 @@ public class SyncJobManager {
 
         // 복수 : 총 지수정보 데이터: 228건
         // 반복 호출 사용시 아래 로직을 사용예정.
-        // List<StockMarketIndex> stockMarketIndexList = fetchStockMarketIndexes(response);
+//        StockMarketIndexApiRequest request = StockMarketIndexApiRequest.ofPage(response.getPageNo(), response.getNumOfRows());
+//        List<StockMarketIndex> stockMarketIndexList = fetchStockMarketIndexes(response, request);
         if (stockMarketIndexList.isEmpty()) {
             log.warn("동기화할 주가지수 데이터가 없습니다.");
             return;
         }
 
         Map<IndexInfoKey, StockMarketIndex> latestStockMarketIndices = getLatestStockMarketIndices(stockMarketIndexList);
-        log.info("latestStockMarketIndices.size : {}", latestStockMarketIndices.size());
-        /*
-         * TODO indexInfoService.saveAll
-         *  - indexInfo의 저장받을 Dto가 필요합니다.
-         *  - 메서드와 Dto가 정의된 이후 작업예정입니다.
-         */
 
+        List<IndexInfoCreateCommand> infoCreateCommands = latestStockMarketIndices.values().stream()
+                .map(StockMarketIndex::toIndexInfoCommand)
+                .toList();
 
         String worker = ipAddressService.getClientIp();
-        List<IndexInfoKey> indexInfoKeys = latestStockMarketIndices.keySet().stream().toList();
-        /*
-         * TODO syncJobService.saveAll
-         *  - syncJobService 가 공유되면 작업 예정입니다.
-         */
+
+        syncJobService.indexInfoSaveAll( infoCreateCommands, worker);
 
     }
 
+    public void syncIndexDataList(IndexDataSyncCommand command, String worker) {
+        List<Long> indexInfoIds = command.indexInfoIds();
+        LocalDate baseDateFrom = command.baseDateFrom();
+        LocalDate baseDateTo = command.baseDateTo();
+
+        List<IndexInfo> indexInfos = indexInfoReader.findIndexInfosByIds(indexInfoIds);
+
+        Map<IndexInfoKey, IndexInfo> infoKeyIndexInfoMap = indexInfos.stream()
+                .collect(Collectors.toMap(this::createIndexInfoKey, Function.identity()));
+
+        List<StockMarketIndexApiRequest> apiRequests = infoKeyIndexInfoMap.keySet().stream()
+                .map(key -> StockMarketIndexApiRequest.ofExactIndexName(baseDateFrom, baseDateTo, key.indexName()))
+                .toList();
+
+        List<StockMarketIndex> filteredIndexes = apiRequests.stream()
+                .map(request -> fetchStockMarketIndexes(dataGoKrApiService.getStockMarketIndexList(request), request))
+                .flatMap(List::stream)
+                .filter(smi -> infoKeyIndexInfoMap.get(IndexInfoKey.from(smi)) != null)
+                .toList();
+
+        List<IndexDataOpenApiCommand> dataOpenApiCommands = filteredIndexes.stream()
+                .map(smi -> smi.toIndexDataCommand(infoKeyIndexInfoMap.get(IndexInfoKey.from(smi))))
+                .toList();
+
+        syncJobService.indexDataSaveAll(dataOpenApiCommands, worker);
+
+    }
+
+    public void syncIndexDataList(IndexDataSyncCommand command) {
+        syncIndexDataList(command, ipAddressService.getClientIp());
+    }
 
     private <T> List<T> getList(DataGoKrApiResponse<T> response) {
         if (isResponseError(response)) {
@@ -98,7 +133,9 @@ public class SyncJobManager {
         return existDate.isAfter(incomingDate) ? exist : incoming;
     }
 
-    private List<StockMarketIndex> fetchStockMarketIndexes(DataGoKrApiResponse<StockMarketIndex> firstResponse) {
+    private List<StockMarketIndex> fetchStockMarketIndexes(
+            DataGoKrApiResponse<StockMarketIndex> firstResponse,
+            StockMarketIndexApiRequest originRequest) {
         Integer totalPages = firstResponse.getTotalPages();
         Integer pageNo = firstResponse.getPageNo();
         Integer numOfRows = firstResponse.getNumOfRows();
@@ -117,7 +154,12 @@ public class SyncJobManager {
         // 25만건 전부 호출시 1분 소요..
         // 비동기 멀티쓰레드 사용 고려 예정
         for (int currentPage = pageNo + 1; currentPage <= totalPages; currentPage++) {
-            DataGoKrApiResponse<StockMarketIndex> pageResponse = dataGoKrApiService.getStockMarketIndexList(StockMarketIndexApiRequest.ofPage(numOfRows, currentPage));
+
+            StockMarketIndexApiRequest pageRequest = originRequest
+                    .withPageNo(currentPage)
+                    .withNumOfRows(numOfRows);
+
+            DataGoKrApiResponse<StockMarketIndex> pageResponse = dataGoKrApiService.getStockMarketIndexList(pageRequest);
 
             if (isResponseError(pageResponse)) {
                 log.error(
@@ -132,6 +174,10 @@ public class SyncJobManager {
             lists.addAll(pageResponse.getItem());
         }
         return lists;
+    }
+
+    private IndexInfoKey createIndexInfoKey(IndexInfo info) {
+        return new IndexInfoKey(info.getIndexClassification(), info.getIndexName());
     }
 
 }
