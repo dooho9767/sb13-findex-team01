@@ -5,6 +5,7 @@ import com.sb13.findex.indexdata.dto.command.IndexDataOpenApiCommand;
 import com.sb13.findex.indexinfo.dto.command.IndexInfoCreateCommand;
 import com.sb13.findex.indexinfo.entity.IndexInfo;
 import com.sb13.findex.indexinfo.service.IndexInfoReader;
+import com.sb13.findex.sync.client.modle.OpenApiErrorCode;
 import com.sb13.findex.sync.dto.command.IndexDataSyncCommand;
 import com.sb13.findex.sync.dto.command.IndexInfoKey;
 import com.sb13.findex.sync.dto.request.StockMarketIndexApiRequest;
@@ -100,19 +101,24 @@ public class SyncJobManager {
     }
 
     public List<SyncJobDto> syncIndexDataList(IndexDataSyncCommand command) {
-      return syncIndexDataList(command, ipAddressService.getClientIp());
+        return syncIndexDataList(command, ipAddressService.getClientIp());
     }
 
     private <T> List<T> getList(DataGoKrApiResponse<T> response) {
         if (isResponseError(response)) {
-            log.error("response : {}", response);
             return List.of();
         }
         return response.getItem();
     }
 
     private <T> boolean isResponseError(DataGoKrApiResponse<T> response) {
-        return !SUCCESS_CODE.equals(response.getResultCode());
+        boolean hasError = !SUCCESS_CODE.equals(response.getResultCode());
+        if (hasError) {
+            log.error("response : {}", response);
+            OpenApiErrorCode apiErrorCode = OpenApiErrorCode.from(response.getResultCode());
+            log.error("errorMessage : {}", apiErrorCode.getMessage());
+        }
+        return hasError;
     }
 
     private Map<IndexInfoKey, StockMarketIndex> getLatestStockMarketIndices(List<StockMarketIndex> stockMarketIndexList) {
