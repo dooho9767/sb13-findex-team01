@@ -12,8 +12,8 @@ import java.util.List;
 public interface SyncJobService {
     CursorPageResponse<SyncJobDto> search(SyncJobSearchCommand command);
 
-    void indexDataSaveAll(List<IndexDataOpenApiCommand> dataOpenApiCommands, String worker);
+    List<SyncJobDto> indexDataSaveAll(List<IndexDataOpenApiCommand> dataOpenApiCommands, String worker);
 
-    void indexInfoSaveAll( List<IndexInfoCreateCommand> infoCreateCommands, String worker);
+    List<SyncJobDto> indexInfoSaveAll(List<IndexInfoCreateCommand> infoCreateCommands, String worker);
 
 }
