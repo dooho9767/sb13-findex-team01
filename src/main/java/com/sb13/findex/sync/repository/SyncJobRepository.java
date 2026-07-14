@@ -18,7 +18,7 @@ public interface SyncJobRepository extends JpaRepository<SyncJob, Long>, SyncJob
     @Modifying
     @Query("""
                 UPDATE SyncJob sj
-                SET sj.indexInfo.id = null
+                SET sj.indexInfo = null
                 WHERE sj.indexInfo.id = :indexInfoId
             """)
     int clearIndexInfoReferenceByIndexInfoId(@Param("indexInfoId") Long indexInfoId);

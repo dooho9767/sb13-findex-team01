@@ -55,13 +55,15 @@ public class SyncJobController {
     @PostMapping("/index-infos")
     public ResponseEntity<List<SyncJobDto>> syncIndexInfos(){
         List<SyncJobDto> syncJobDtos = syncJobManager.syncIndexInfos();
-        return ResponseEntity.status(HttpStatus.CREATED).body(syncJobDtos);
+        HttpStatus status = syncJobDtos.isEmpty() ? HttpStatus.OK : HttpStatus.CREATED;
+        return ResponseEntity.status(status).body(syncJobDtos);
     }
 
     @PostMapping("/index-data")
-    public ResponseEntity<List<SyncJobDto>> syncIndexData(@ModelAttribute IndexDataSyncRequest request){
+    public ResponseEntity<List<SyncJobDto>> syncIndexData(@RequestBody IndexDataSyncRequest request){
         List<SyncJobDto> syncJobDtos = syncJobManager.syncIndexDataList(request.toCommand());
-        return ResponseEntity.status(HttpStatus.CREATED).body(syncJobDtos);
+        HttpStatus status = syncJobDtos.isEmpty() ? HttpStatus.OK : HttpStatus.CREATED;
+        return ResponseEntity.status(status).body(syncJobDtos);
     }
 
 

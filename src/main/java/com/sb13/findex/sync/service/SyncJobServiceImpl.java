@@ -122,6 +122,7 @@ public class SyncJobServiceImpl implements SyncJobService {
                 .toList();
     }
 
+    @Transactional
     @Override
     public int detachIndexInfo(Long indexInfoId) {
         if (indexInfoId == null) {

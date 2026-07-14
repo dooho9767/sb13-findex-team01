@@ -60,4 +60,11 @@ public class SyncJob extends BaseEntity {
         this.jobTime = jobTime;
         this.result = result;
     }
+
+    public Long getIndexInfoId() {
+        if (indexInfo == null) {
+            return null;
+        }
+        return indexInfo.getId();
+    }
 }
