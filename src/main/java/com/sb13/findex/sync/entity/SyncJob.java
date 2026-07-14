@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Table(name = "sync_job")
@@ -22,7 +23,7 @@ public class SyncJob extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "index_info_id", nullable = false)
+    @JoinColumn(name = "index_info_id")
     private IndexInfo indexInfo;
 
     @Enumerated(EnumType.STRING)
@@ -41,6 +42,15 @@ public class SyncJob extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "result", length = 30, nullable = false)
     private JobResult result;
+
+    @Column(name = "sync_execution_id")
+    private UUID syncExecutionId;
+
+    @Column(name = "index_name_snapshot", length = 100)
+    private String indexNameSnapshot;
+
+    @Column(name = "index_classification_snapshot", length = 30)
+    private String indexClassificationSnapshot;
 
     public SyncJob(IndexInfo indexInfo, JobType jobType, LocalDate targetDate, String worker, LocalDateTime jobTime, JobResult result) {
         this.indexInfo = indexInfo;

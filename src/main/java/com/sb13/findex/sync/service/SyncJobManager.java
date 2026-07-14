@@ -10,6 +10,7 @@ import com.sb13.findex.sync.dto.command.IndexInfoKey;
 import com.sb13.findex.sync.dto.request.StockMarketIndexApiRequest;
 import com.sb13.findex.sync.dto.response.DataGoKrApiResponse;
 import com.sb13.findex.sync.dto.response.StockMarketIndex;
+import com.sb13.findex.sync.dto.response.SyncJobDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -39,7 +40,7 @@ public class SyncJobManager {
 
     private final IndexInfoReader indexInfoReader;
 
-    public void syncIndexInfos() {
+    public List<SyncJobDto> syncIndexInfos() {
         DataGoKrApiResponse<StockMarketIndex> response = dataGoKrApiService.getStockMarketIndexList();
 
         // 단건 : 기본 설정으로 총 데이터 : 10
@@ -51,7 +52,7 @@ public class SyncJobManager {
 //        List<StockMarketIndex> stockMarketIndexList = fetchStockMarketIndexes(response, request);
         if (stockMarketIndexList.isEmpty()) {
             log.warn("동기화할 주가지수 데이터가 없습니다.");
-            return;
+            return List.of();
         }
 
         Map<IndexInfoKey, StockMarketIndex> latestStockMarketIndices = getLatestStockMarketIndices(stockMarketIndexList);
@@ -62,16 +63,20 @@ public class SyncJobManager {
 
         String worker = ipAddressService.getClientIp();
 
-        syncJobService.indexInfoSaveAll( infoCreateCommands, worker);
+        return syncJobService.indexInfoSaveAll(infoCreateCommands, worker);
 
     }
 
-    public void syncIndexDataList(IndexDataSyncCommand command, String worker) {
+    public List<SyncJobDto> syncIndexDataList(IndexDataSyncCommand command, String worker) {
         List<Long> indexInfoIds = command.indexInfoIds();
         LocalDate baseDateFrom = command.baseDateFrom();
         LocalDate baseDateTo = command.baseDateTo();
 
         List<IndexInfo> indexInfos = indexInfoReader.findIndexInfosByIds(indexInfoIds);
+        if (indexInfos.isEmpty()) {
+            log.warn("동기화할 지수정보가 없습니다.");
+            return List.of();
+        }
 
         Map<IndexInfoKey, IndexInfo> infoKeyIndexInfoMap = indexInfos.stream()
                 .collect(Collectors.toMap(this::createIndexInfoKey, Function.identity()));
@@ -90,12 +95,12 @@ public class SyncJobManager {
                 .map(smi -> smi.toIndexDataCommand(infoKeyIndexInfoMap.get(IndexInfoKey.from(smi))))
                 .toList();
 
-        syncJobService.indexDataSaveAll(dataOpenApiCommands, worker);
+        return syncJobService.indexDataSaveAll(dataOpenApiCommands, worker);
 
     }
 
-    public void syncIndexDataList(IndexDataSyncCommand command) {
-        syncIndexDataList(command, ipAddressService.getClientIp());
+    public List<SyncJobDto> syncIndexDataList(IndexDataSyncCommand command) {
+      return syncIndexDataList(command, ipAddressService.getClientIp());
     }
 
     private <T> List<T> getList(DataGoKrApiResponse<T> response) {

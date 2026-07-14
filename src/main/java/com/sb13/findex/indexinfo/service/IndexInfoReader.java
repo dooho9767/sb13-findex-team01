@@ -12,7 +12,7 @@ import java.util.List;
 public class IndexInfoReader {
     private final IndexInfoRepository indexInfoRepository;
 
-    public List<IndexInfo> findIndexInfosByIds(List<Long> ids) {
-        return indexInfoRepository.findAllById(ids);
+    public List<IndexInfo> findIndexInfosByIds(List<Long> indexInfoIds) {
+        return indexInfoRepository.findAllById(indexInfoIds);
     }
 }
