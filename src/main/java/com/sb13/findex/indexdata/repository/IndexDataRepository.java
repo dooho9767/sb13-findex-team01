@@ -15,5 +15,8 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long>, Ind
  //index_data테이블에서 지수 데이터를 찾기 위한 메서드
   Optional<IndexData> findByIndexInfo_IdAndBaseDate(Long indexInfoId, LocalDate baseDate);
 
+  // 특정 IndexInfo에 종속된 모든 지수 데이터를 DB에서 일괄 삭제
+  void deleteAllByIndexInfo_Id(Long indexInfoId);
+
   boolean existsByIndexInfo_IdAndBaseDate(Long indexInfoId, LocalDate baseDate);
 }

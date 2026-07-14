@@ -1,6 +1,7 @@
 package com.sb13.findex.indexdata.service;
 
 import com.sb13.findex.indexdata.dto.command.IndexDataOpenApiCommand;
+import com.sb13.findex.indexdata.dto.command.IndexDataUpdateCommand;
 import com.sb13.findex.indexdata.dto.response.CursorPageResponse;
 import com.sb13.findex.indexdata.dto.command.IndexDataCreateCommand;
 import com.sb13.findex.indexdata.dto.response.IndexDataResponse;
@@ -52,6 +53,42 @@ public class IndexDataServiceImpl implements IndexDataService {
         IndexData savedData = indexDataRepository.save(indexData);
 
         return IndexDataMapper.toResponse(savedData);
+    }
+
+    @Override
+    @Transactional
+    public IndexDataResponse updateIndexData(Long id, IndexDataUpdateCommand command) {
+        IndexData indexData = indexDataRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 지수 데이터입니다. ID: " + id));
+
+        indexData.updateByUser(
+            command.marketPrice(),
+            command.closingPrice(),
+            command.highPrice(),
+            command.lowPrice(),
+            command.versus(),
+            command.fluctuationRate(),
+            command.tradingQuantity(),
+            command.tradingPrice(),
+            command.marketTotalAmount()
+        );
+
+        return IndexDataMapper.toResponse(indexData);
+    }
+
+    @Override
+    @Transactional
+    public void deleteIndexData(Long id) {
+        IndexData indexData = indexDataRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 지수 데이터입니다. ID: " + id));
+
+        indexDataRepository.delete(indexData);
+    }
+
+    @Override
+    @Transactional
+    public void deleteByIndexInfoId(Long indexInfoId) {
+        indexDataRepository.deleteAllByIndexInfo_Id(indexInfoId);
     }
 
     @Override
