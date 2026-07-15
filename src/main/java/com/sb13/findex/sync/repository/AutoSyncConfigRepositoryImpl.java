@@ -7,6 +7,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sb13.findex.sync.dto.condition.AutoSyncConfigSearchCondition;
 import com.sb13.findex.sync.dto.condition.AutoSyncConfigSortField;
 import com.sb13.findex.sync.entity.AutoSyncConfig;
+import com.sb13.findex.sync.exception.InvalidSortDirectionException;
 import org.springframework.stereotype.Repository;
 import com.sb13.findex.indexinfo.entity.QIndexInfo;
 import com.sb13.findex.sync.entity.QAutoSyncConfig;
@@ -89,6 +90,8 @@ public class AutoSyncConfigRepositoryImpl implements AutoSyncConfigRepositoryCus
         };
     }
 
+
+
     // 정렬 필드 값이 같으면 id로 한 번 더 비교 (스펙: 이전 페이지 마지막 요소 ID 기준 커서)
     private BooleanBuilder compareIndexInfoIdCursor(Long cursor, Long idAfter, boolean ascending) {
         QAutoSyncConfig autoSyncConfig = QAutoSyncConfig.autoSyncConfig;
@@ -151,7 +154,17 @@ public class AutoSyncConfigRepositoryImpl implements AutoSyncConfigRepositoryCus
         return new OrderSpecifier<>(order, QAutoSyncConfig.autoSyncConfig.id);
     }
 
+    // null/blank는 "미지정"으로 보고 기본값(desc) 처리, 그 외 asc/desc가 아닌 값은 명시적으로 거부
     private boolean isAscending(String sortDirection) {
-        return "asc".equalsIgnoreCase(sortDirection);
+        if (sortDirection == null || sortDirection.isBlank()) {
+            return false;
+        }
+        if ("asc".equalsIgnoreCase(sortDirection)) {
+            return true;
+        }
+        if ("desc".equalsIgnoreCase(sortDirection)) {
+            return false;
+        }
+        throw new InvalidSortDirectionException(sortDirection);
     }
 }

@@ -29,7 +29,7 @@ public class AutoSyncConfigController {
     }
 
     @GetMapping
-    public CursorPageResponse<AutoSyncConfigDto> search(
+    public ResponseEntity<CursorPageResponse<AutoSyncConfigDto>> search(
             @RequestParam(required = false) Long indexInfoId,
             @RequestParam(required = false) Boolean enabled,
             @RequestParam(required = false) String cursor,
@@ -48,6 +48,8 @@ public class AutoSyncConfigController {
                 sortDirection
         );
 
-        return autoSyncConfigService.getList(condition);
+        // ai 및 구영님 피드백에 따라 반환 타입 수정
+        CursorPageResponse<AutoSyncConfigDto> response = autoSyncConfigService.getList(condition);
+        return ResponseEntity.ok(response);
     }
 }
