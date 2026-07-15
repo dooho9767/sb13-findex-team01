@@ -4,13 +4,17 @@ import com.sb13.findex.sync.entity.JobResult;
 import com.sb13.findex.sync.entity.JobType;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record SyncJobSearchRequest(
         String jobType,
         Long indexInfoId,
-        LocalDate targetDate,
+        LocalDate baseDateFrom,
+        LocalDate baseDateTo,
         String worker,
-        String result,
+        LocalDateTime jobTimeFrom,
+        LocalDateTime jobTimeTo,
+        String status,
         String sortField,
         String sortDirection,
         String cursor,
@@ -25,18 +29,18 @@ public record SyncJobSearchRequest(
         try{
             return JobType.valueOf(jobType.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("유효하지 않은 jobType 값입니다:" + jobType);
+            throw new IllegalArgumentException("유효하지 않은 jobType 값입니다:" + jobType, e);
         }
     }
 
-    private JobResult parseJobResult(String result) {
-        if (result == null || result.isBlank()) {
+    private JobResult parseJobResult(String status) {
+        if (status == null || status.isBlank()) {
             return null;
         }
         try {
-            return JobResult.valueOf(result.toUpperCase());
+            return JobResult.valueOf(status.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("유효하지 않은 result 값입니다: " + result);
+            throw new IllegalArgumentException("유효하지 않은 status 값입니다: " + status, e);
         }
     }
 
@@ -45,9 +49,12 @@ public record SyncJobSearchRequest(
        return new SyncJobSearchCommand(
                parseJobType(jobType),
                indexInfoId,
-               targetDate,
+               baseDateFrom,
+               baseDateTo,
                worker,
-               parseJobResult(result),
+               jobTimeFrom,
+               jobTimeTo,
+               parseJobResult(status),
                sortField,
                SortDirection.from(sortDirection).name(),
                cursor,
