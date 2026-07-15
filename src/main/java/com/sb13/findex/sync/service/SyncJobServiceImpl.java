@@ -6,7 +6,7 @@ import com.sb13.findex.indexdata.dto.response.CursorPageResponse;
 import com.sb13.findex.indexdata.service.IndexDataService;
 import com.sb13.findex.indexinfo.dto.command.IndexInfoCreateCommand;
 import com.sb13.findex.indexinfo.service.IndexInfoService;
-import com.sb13.findex.sync.dto.command.IndexDataKey;
+import com.sb13.findex.sync.dto.command.IndexDataSyncJobTarget;
 import com.sb13.findex.sync.dto.command.IndexInfoKey;
 import com.sb13.findex.sync.dto.request.SyncJobSearchCommand;
 import com.sb13.findex.sync.dto.request.SyncJobSortField;
@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @Transactional(readOnly = true) // 조회 전용이라 읽기 전용 트랜잭션으로 설정 했습니다.
@@ -79,21 +80,29 @@ public class SyncJobServiceImpl implements SyncJobService {
 
     @Transactional
     @Override
-    public void indexDataSaveAll(List<IndexDataOpenApiCommand> dataOpenApiCommands, String worker) {
+    public List<SyncJobDto> indexDataSaveAll(List<IndexDataOpenApiCommand> dataOpenApiCommands, String worker) {
 
         dataOpenApiCommands.forEach(indexDataService::saveOrUpdateOpenApiData);
 
-        List<IndexDataKey> indexDataKeys = dataOpenApiCommands.stream()
+        List<IndexDataSyncJobTarget> indexDataSyncJobTargets = dataOpenApiCommands.stream()
                 .map(this::createIndexDataKey)
                 .toList();
 
-        syncJobRepository.saveDataAll(worker, indexDataKeys);
+        UUID uuid = UUID.randomUUID();
+
+        syncJobRepository.saveDataAll(worker, indexDataSyncJobTargets, uuid);
+
+        List<SyncJob> foundSyncJobs = syncJobRepository.findBySyncExecutionId(uuid);
+
+        return foundSyncJobs.stream()
+                .map(SyncJobMapper::toSyncJobDto)
+                .toList();
 
     }
 
     @Transactional
     @Override
-    public void indexInfoSaveAll(List<IndexInfoCreateCommand> infoCreateCommands, String worker) {
+    public List<SyncJobDto> indexInfoSaveAll(List<IndexInfoCreateCommand> infoCreateCommands, String worker) {
 
         // TODO OPEN_API 저장로직 필요.
         //  - indexInfoService.saveAll(infoCreateCommands)?
@@ -102,16 +111,30 @@ public class SyncJobServiceImpl implements SyncJobService {
                 .map(this::getIndexInfoKey)
                 .toList();
 
-        syncJobRepository.saveInfoAll(worker, indexInfoKeys);
+        UUID uuid = UUID.randomUUID();
 
+        syncJobRepository.saveInfoAll(worker, indexInfoKeys, uuid);
+
+        List<SyncJob> foundSyncJobs = syncJobRepository.findBySyncExecutionId(uuid);
+
+        return foundSyncJobs.stream()
+                .map(SyncJobMapper::toSyncJobDto)
+                .toList();
     }
+
+
 
     private IndexInfoKey getIndexInfoKey(IndexInfoCreateCommand command) {
         return new IndexInfoKey(command.indexClassification(), command.indexName());
     }
 
-    private IndexDataKey createIndexDataKey(IndexDataOpenApiCommand command) {
-        return new IndexDataKey(command.indexInfo().getId(), command.baseDate());
+    private IndexDataSyncJobTarget createIndexDataKey(IndexDataOpenApiCommand command) {
+        return new IndexDataSyncJobTarget(
+                command.indexInfo().getId(),
+                command.baseDate(),
+                command.indexInfo().getIndexClassification(),
+                command.indexInfo().getIndexName()
+        );
     }
 
     // size 파라미터가 없거나 잘못된 값이면 기본값(10) 사용

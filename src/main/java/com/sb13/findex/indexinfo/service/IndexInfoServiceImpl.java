@@ -3,10 +3,12 @@ package com.sb13.findex.indexinfo.service;
 import com.sb13.findex.indexinfo.dto.command.*;
 import com.sb13.findex.indexinfo.dto.response.*;
 import com.sb13.findex.indexinfo.entity.*;
+import com.sb13.findex.indexinfo.exception.*;
 import com.sb13.findex.indexinfo.mapper.*;
 import com.sb13.findex.indexinfo.repository.*;
 import com.sb13.findex.indexinfo.utli.*;
 import com.sb13.findex.sync.entity.*;
+import com.sb13.findex.sync.service.*;
 import lombok.*;
 import org.springframework.stereotype.*;
 import org.springframework.transaction.annotation.*;
@@ -18,6 +20,7 @@ import java.util.*;
 public class IndexInfoServiceImpl implements IndexInfoService {
 
     private final IndexInfoRepository indexInfoRepository;
+    private final AutoSyncConfigService autoSyncConfigService;
 
     @Override
     public CursorPageResponse<IndexInfoResponse> search(IndexInfoSearchCondition condition) {
@@ -65,9 +68,7 @@ public class IndexInfoServiceImpl implements IndexInfoService {
         if(indexInfoRepository.existsByIndexClassificationAndIndexName(
                 indexClassification, indexName
         )) {
-            throw new IllegalArgumentException(
-                    "이미 존재하는 지수 정보입니다."
-            );
+            throw new DuplicateIndexInfoException();
         }
         IndexInfo indexInfo = IndexInfo.create(
                 indexClassification,
@@ -80,6 +81,12 @@ public class IndexInfoServiceImpl implements IndexInfoService {
         );
 
         IndexInfo savedIndexInfo = indexInfoRepository.save(indexInfo);
+        autoSyncConfigService.create(
+                new AutoSyncConfigCommand(
+                        savedIndexInfo,
+                        false
+                )
+        );
 
         return IndexInfoMapper.toResponse(savedIndexInfo);
     }
@@ -87,7 +94,7 @@ public class IndexInfoServiceImpl implements IndexInfoService {
     @Override
     public IndexInfoResponse findById(Long id) {
         IndexInfo indexInfo = indexInfoRepository.findById(id)
-                .orElseThrow(()-> new IllegalArgumentException("존재하지 않는 지수 정보 입니다. ID: " +id));
+                .orElseThrow(()-> new IndexInfoNotFoundException(id));
 
         return IndexInfoMapper.toResponse(indexInfo);
     }
@@ -96,7 +103,7 @@ public class IndexInfoServiceImpl implements IndexInfoService {
     @Transactional
     public IndexInfoResponse update(Long id, IndexInfoUpdateCommand command) {
         IndexInfo indexInfo = indexInfoRepository.findById(id)
-                .orElseThrow(()-> new IllegalArgumentException("존재하지 않는 지수 정보입니다. ID= " + id));
+                .orElseThrow(()-> new IndexInfoNotFoundException(id));
 
         indexInfo.update(
                 command.employedItemsCount(),
@@ -105,7 +112,7 @@ public class IndexInfoServiceImpl implements IndexInfoService {
                 command.favorite()
         );
 
-        return IndexInfoMapper.toResponse(indexInfoRepository.save(indexInfo));
+        return IndexInfoMapper.toResponse(indexInfo);
     }
 
     @Override
@@ -113,8 +120,10 @@ public class IndexInfoServiceImpl implements IndexInfoService {
     public void delete(Long id) {
 
         IndexInfo indexInfo = indexInfoRepository.findById(id)
-                .orElseThrow(()-> new IllegalArgumentException(
-                        "존재하지 않는 지수 정보입니다. ID: " + id));
+                .orElseThrow(()-> new IndexInfoNotFoundException(id));
+
+        // TODO IndexData 삭제 메서드 추가 후 연결
+        // indexDataService.deleteAllByIndexInfoId(id);
 
         indexInfoRepository.delete(indexInfo);
     }
@@ -133,4 +142,5 @@ public class IndexInfoServiceImpl implements IndexInfoService {
             case EMPLOYED_ITEMS_COUNT -> String.valueOf(indexInfo.getEmployedItemsCount());
         };
     }
+
 }
