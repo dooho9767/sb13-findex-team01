@@ -47,7 +47,7 @@ public class IndexInfoServiceImpl implements IndexInfoService {
         String nextCursor = null;
         Long nextIdAfter = null;
 
-        if(hasNext && !content.isEmpty()) {
+        if (hasNext && !content.isEmpty()) {
             IndexInfo last = content.get(content.size() - 1);
             nextCursor = getCursorValue(last, condition.sortField());
             nextIdAfter = last.getId();
@@ -70,7 +70,7 @@ public class IndexInfoServiceImpl implements IndexInfoService {
         String indexClassification = command.indexClassification().strip();
         String indexName = command.indexName().strip();
 
-        if(indexInfoRepository.existsByIndexClassificationAndIndexName(
+        if (indexInfoRepository.existsByIndexClassificationAndIndexName(
                 indexClassification, indexName
         )) {
             throw new DuplicateIndexInfoException();
@@ -99,7 +99,7 @@ public class IndexInfoServiceImpl implements IndexInfoService {
     @Override
     public IndexInfoResponse findById(Long id) {
         IndexInfo indexInfo = indexInfoRepository.findById(id)
-                .orElseThrow(()-> new IndexInfoNotFoundException(id));
+                .orElseThrow(() -> new IndexInfoNotFoundException(id));
 
         return IndexInfoMapper.toResponse(indexInfo);
     }
@@ -108,7 +108,7 @@ public class IndexInfoServiceImpl implements IndexInfoService {
     @Transactional
     public IndexInfoResponse update(Long id, IndexInfoUpdateCommand command) {
         IndexInfo indexInfo = indexInfoRepository.findById(id)
-                .orElseThrow(()-> new IndexInfoNotFoundException(id));
+                .orElseThrow(() -> new IndexInfoNotFoundException(id));
 
         indexInfo.update(
                 command.employedItemsCount(),
@@ -125,7 +125,7 @@ public class IndexInfoServiceImpl implements IndexInfoService {
     public void delete(Long id) {
 
         IndexInfo indexInfo = indexInfoRepository.findById(id)
-                .orElseThrow(()-> new IndexInfoNotFoundException(id));
+                .orElseThrow(() -> new IndexInfoNotFoundException(id));
 
         // 지수 정보애 연결된 지수데이터 전체삭제
         indexDataService.deleteByIndexInfoId(id);
@@ -157,7 +157,7 @@ public class IndexInfoServiceImpl implements IndexInfoService {
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void saveOrUpdateOpenApiInfo(
             IndexInfoCreateCommand command
     ) {
@@ -166,40 +166,41 @@ public class IndexInfoServiceImpl implements IndexInfoService {
         String indexName =
                 command.indexName().strip();
 
-        Optional<IndexInfo> existingIndexInfo =
-                indexInfoRepository
-                        .findByIndexClassificationAndIndexName(
-                                indexClassification,
-                                indexName
-                        );
-
-        if (existingIndexInfo.isPresent()) {
-            existingIndexInfo.get().updateByOpenApi(
-                    command.employedItemsCount(),
-                    command.basePointInTime(),
-                    command.baseIndex()
-            );
-            return;
-        }
-
-        IndexInfo indexInfo = IndexInfo.create(
+        int affectedRows = indexInfoRepository.upsertOpenApiIndexInfo(
                 indexClassification,
                 indexName,
                 command.employedItemsCount(),
                 command.basePointInTime(),
-                command.baseIndex(),
-                SourceType.OPEN_API,
-                false
+                command.baseIndex()
         );
 
-        IndexInfo savedIndexInfo =
-                indexInfoRepository.saveAndFlush(indexInfo);
+        if (affectedRows == 0) {
+            throw new IllegalStateException(
+                    "동일한 지수정보가 OPEN_API가 아닌 sourceType으로 이미 존재합니다."
+            );
+        }
 
-        autoSyncConfigService.create(
+       IndexInfo indexInfo =
+                indexInfoRepository
+                        .findByIndexClassificationAndIndexName(
+                                indexClassification,
+                                indexName
+                        )
+                        .orElseThrow(() ->
+                                new IllegalStateException(
+                                        "UPSERT 처리된 지수정보를 찾을 수 없습니다."
+                                )
+                        );
+
+        // TODO AutoSyncConfig 담당 기능 병합 후 신규 지수정보의 기본 설정 생성 연동
+        /*autoSyncConfigService.createIfAbsent(
                 new AutoSyncConfigCommand(
-                        savedIndexInfo,
+                        indexInfo,
                         false
                 )
         );
+        */
+
     }
+
 }
