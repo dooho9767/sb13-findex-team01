@@ -130,8 +130,8 @@ public class IndexInfoServiceImpl implements IndexInfoService {
         // 지수 정보애 연결된 지수데이터 전체삭제
         indexDataService.deleteByIndexInfoId(id);
 
-        // TODO: 자동 연동 담당자 메서드 추가 후 연결
-        // autoSyncConfigService.deleteByIndexInfoId(id);
+        // 지수 정보에 연결된 자동연동 설정 삭제
+        autoSyncConfigService.deleteByIndexInfoId(id);
 
 
         // SyncJob 이력은 유지하고 삭제 대상 IndexInfo와의 연관관계만 해제
