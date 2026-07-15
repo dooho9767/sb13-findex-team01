@@ -19,12 +19,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/sync-jobs")
 @RequiredArgsConstructor
-public class SyncJobController {
+public class SyncJobController implements SyncJobApi{
 
     private final SyncJobService syncJobService;
 
     private final SyncJobManager syncJobManager;
 
+    @Override
     @GetMapping
     public CursorPageResponse<SyncJobDto> search(
             @RequestParam(required = false) String jobType,
@@ -53,6 +54,7 @@ public class SyncJobController {
         return syncJobService.search(request.toCommand());
     }
 
+    @Override
     @PostMapping("/index-infos")
     public ResponseEntity<List<SyncJobDto>> syncIndexInfos(){
         List<SyncJobDto> syncJobDtos = syncJobManager.syncIndexInfos();
@@ -60,6 +62,7 @@ public class SyncJobController {
         return ResponseEntity.status(status).body(syncJobDtos);
     }
 
+    @Override
     @PostMapping("/index-data")
     public ResponseEntity<List<SyncJobDto>> syncIndexData(@Valid @RequestBody IndexDataSyncRequest request){
         List<SyncJobDto> syncJobDtos = syncJobManager.syncIndexDataList(request.toCommand());
