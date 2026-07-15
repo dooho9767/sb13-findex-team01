@@ -92,10 +92,21 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(
         DataIntegrityViolationException exception
     ) {
+        String specificMessage = exception.getMostSpecificCause().getMessage();
+
+        if (specificMessage != null && (specificMessage.toLowerCase().contains("duplicate") ||
+            specificMessage.toLowerCase().contains("unique"))) {
+            return createErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                "데이터 충돌이 발생했습니다.",
+                "이미 동일한 데이터가 존재하거나 유니크 제약 조건을 위반했습니다."
+            );
+        }
+
         return createErrorResponse(
-            HttpStatus.BAD_REQUEST,
-            "데이터 충돌이 발생했습니다.",
-            "이미 동일한 데이터가 존재하거나 유니크 제약 조건을 위반했습니다."
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            "데이터베이스 오류가 발생했습니다.",
+            "데이터 처리 중 문제가 발생했습니다."
         );
     }
 

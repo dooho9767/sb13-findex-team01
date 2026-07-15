@@ -96,7 +96,7 @@ public interface IndexDataApi {
   })
   IndexChartResponse getIndexChart(
       @Parameter(description = "지수 정보 ID") Long id,
-      @Parameter(description = "차트 기간 유형 (DAILY, WEEKLY, MONTHLY)") ChartPeriodType periodType
+      @Parameter(description = "차트 기간 유형 (MONTHLY, QUARTERLY, YEARLY)") ChartPeriodType periodType
   );
 
   @Operation(summary = "지수 성과 순위 조회", description = "기간별 성과가 가장 좋은 지수들의 순위를 조회합니다.")
