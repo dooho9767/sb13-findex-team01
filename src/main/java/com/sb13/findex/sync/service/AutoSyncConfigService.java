@@ -83,4 +83,10 @@ public class AutoSyncConfigService {
         return new AutoSyncConfigDto(config.getId(), indexInfo.getId(),
                 indexInfo.getIndexClassification(), indexInfo.getIndexName(), config.isEnabled());
     }
+
+    // 지수 삭제 시 IndexInfo 서비스에서 호출 (하정님 요청 - Repository 대신 Service를 통해 접근하도록 정리)
+    @Transactional
+    public void deleteByIndexInfoId(Long indexInfoId) {
+        autoSyncConfigRepository.deleteByIndexInfoId(indexInfoId);
+    }
 }
