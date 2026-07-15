@@ -40,7 +40,7 @@ public interface IndexInfoRepository extends IndexInfoRepositoryCustom, JpaRepos
                     :employedItemsCount,
                     :basePointInTime,
                     :baseIndex,
-                    'OPEN_API',
+                    :sourceType,                  
                     false,
                     CURRENT_TIMESTAMP,
                     CURRENT_TIMESTAMP
@@ -54,7 +54,7 @@ public interface IndexInfoRepository extends IndexInfoRepositoryCustom, JpaRepos
                     base_point_in_time = EXCLUDED.base_point_in_time,
                     base_index = EXCLUDED.base_index,
                     updated_at = CURRENT_TIMESTAMP
-                WHERE index_info.source_type = 'OPEN_API'
+                WHERE index_info.source_type = :sourceType
                 """,
             nativeQuery = true
     )
@@ -72,6 +72,9 @@ public interface IndexInfoRepository extends IndexInfoRepositoryCustom, JpaRepos
             LocalDate basePointInTime,
 
             @Param("baseIndex")
-            BigDecimal baseIndex
+            BigDecimal baseIndex,
+
+            @Param("sourceType")
+            String sourceType
     );
 }

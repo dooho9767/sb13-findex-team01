@@ -12,6 +12,7 @@ import com.sb13.findex.sync.entity.*;
 import com.sb13.findex.sync.service.*;
 import com.sb13.findex.sync.service.AutoSyncConfigService;
 import lombok.*;
+import lombok.extern.slf4j.*;
 import org.springframework.dao.*;
 import org.springframework.stereotype.*;
 import org.springframework.transaction.annotation.*;
@@ -20,6 +21,7 @@ import java.util.*;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Slf4j
 public class IndexInfoServiceImpl implements IndexInfoService {
 
     private final IndexInfoRepository indexInfoRepository;
@@ -171,12 +173,16 @@ public class IndexInfoServiceImpl implements IndexInfoService {
                 indexName,
                 command.employedItemsCount(),
                 command.basePointInTime(),
-                command.baseIndex()
+                command.baseIndex(),
+                SourceType.OPEN_API.name()
         );
 
         if (affectedRows == 0) {
-            throw new IllegalStateException(
-                    "동일한 지수정보가 OPEN_API가 아닌 sourceType으로 이미 존재합니다."
+            log.info(
+                    "Open API 지수정보 갱신 생략: 동일한 USER 타입 데이터가 존재합니다. " +
+                            "indexClassification={}, indexName={}",
+                    indexClassification,
+                    indexName
             );
         }
 
@@ -187,9 +193,7 @@ public class IndexInfoServiceImpl implements IndexInfoService {
                                 indexName
                         )
                         .orElseThrow(() ->
-                                new IllegalStateException(
-                                        "UPSERT 처리된 지수정보를 찾을 수 없습니다."
-                                )
+                                new IndexInfoNotFoundException(indexClassification, indexName)
                         );
 
         // TODO AutoSyncConfig 담당 기능 병합 후 신규 지수정보의 기본 설정 생성 연동
