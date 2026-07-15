@@ -1,5 +1,6 @@
 package com.sb13.findex.indexdata.service;
 
+import com.sb13.findex.global.exception.IndexDataNotFoundException;
 import com.sb13.findex.indexdata.dto.command.IndexDataOpenApiCommand;
 import com.sb13.findex.indexdata.dto.command.IndexDataUpdateCommand;
 import com.sb13.findex.indexdata.dto.response.CursorPageResponse;
@@ -11,6 +12,7 @@ import com.sb13.findex.indexdata.entity.IndexData;
 import com.sb13.findex.indexdata.mapper.IndexDataMapper;
 import com.sb13.findex.indexdata.repository.IndexDataRepository;
 import com.sb13.findex.indexinfo.entity.IndexInfo;
+import com.sb13.findex.indexinfo.exception.IndexInfoNotFoundException;
 import com.sb13.findex.indexinfo.repository.IndexInfoRepository;
 
 import java.util.List;
@@ -40,8 +42,7 @@ public class IndexDataServiceImpl implements IndexDataService {
     @Transactional
     public IndexDataResponse createIndexData(IndexDataCreateCommand command) {
         IndexInfo indexInfo = indexInfoRepository.findById(command.indexInfoId())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                "참조하는 지수 정보를 찾을 수 없습니다. ID: " + command.indexInfoId()));
+            .orElseThrow(() -> new IndexInfoNotFoundException(command.indexInfoId()));
 
         // 기존 데이터가 있으면 생성 요청은 실패 처리
 
@@ -63,8 +64,7 @@ public class IndexDataServiceImpl implements IndexDataService {
     @Transactional
     public IndexDataResponse updateIndexData(Long id, IndexDataUpdateCommand command) {
         IndexData indexData = indexDataRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                "수정할 지수 데이터를 찾을 수 없습니다. ID: " + id));
+            .orElseThrow(() -> new IndexDataNotFoundException(id));
 
         indexData.updateByUser(
             command.marketPrice(),
@@ -85,8 +85,7 @@ public class IndexDataServiceImpl implements IndexDataService {
     @Transactional
     public void deleteIndexData(Long id) {
         IndexData indexData = indexDataRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                "삭제할 지수 데이터를 찾을 수 없습니다. ID: " + id));
+            .orElseThrow(() -> new IndexDataNotFoundException(id));
 
         indexDataRepository.delete(indexData);
     }
