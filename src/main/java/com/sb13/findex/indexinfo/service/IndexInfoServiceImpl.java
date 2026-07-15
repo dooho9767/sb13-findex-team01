@@ -157,7 +157,7 @@ public class IndexInfoServiceImpl implements IndexInfoService {
     }
 
     @Override
-    @Transactional(가 = Propagation.REQUIRES_NEW)
+    @Transactional(propagation= Propagation.REQUIRES_NEW)
     public void saveOrUpdateOpenApiInfo(
             IndexInfoCreateCommand command
     ) {
