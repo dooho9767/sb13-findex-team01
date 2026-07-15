@@ -103,11 +103,7 @@ public class GlobalExceptionHandler {
             );
         }
 
-        return createErrorResponse(
-            HttpStatus.INTERNAL_SERVER_ERROR,
-            "데이터베이스 오류가 발생했습니다.",
-            "데이터 처리 중 문제가 발생했습니다."
-        );
+        throw exception;
     }
 
 }
