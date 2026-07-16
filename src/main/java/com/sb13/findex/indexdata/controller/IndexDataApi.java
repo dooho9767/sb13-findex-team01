@@ -18,8 +18,6 @@ import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @Tag(name = "지수 데이터 API", description = "지수 데이터(IndexData) 등록, 조회, 수정, 삭제 API")
 public interface IndexDataApi {
@@ -31,8 +29,7 @@ public interface IndexDataApi {
       @ApiResponse(responseCode = "404", description = "참조하는 지수 정보를 찾을 수 없음"),
       @ApiResponse(responseCode = "500", description = "서버 오류")
   })
-  ResponseEntity<IndexDataResponse> createIndexData(
-      @Valid @RequestBody IndexDataCreateRequest request);
+  ResponseEntity<IndexDataResponse> createIndexData(@Valid IndexDataCreateRequest request);
 
   @Operation(summary = "지수 데이터 수정", description = "기존 지수 데이터의 가격 및 거래량 정보를 수정합니다.")
   @ApiResponses({
@@ -41,8 +38,7 @@ public interface IndexDataApi {
       @ApiResponse(responseCode = "404", description = "수정할 지수 데이터를 찾을 수 없음"),
       @ApiResponse(responseCode = "500", description = "서버 오류")
   })
-  ResponseEntity<IndexDataResponse> updateIndexData(
-      @PathVariable Long id, @Valid @RequestBody IndexDataUpdateRequest request);
+  ResponseEntity<IndexDataResponse> updateIndexData(Long id, @Valid IndexDataUpdateRequest request);
 
   @Operation(summary = "지수 데이터 물리 삭제", description = "해당 ID의 지수 데이터를 DB에서 완전히 삭제합니다.")
   @ApiResponses({
@@ -50,7 +46,7 @@ public interface IndexDataApi {
       @ApiResponse(responseCode = "404", description = "삭제할 지수 데이터를 찾을 수 없음"),
       @ApiResponse(responseCode = "500", description = "서버 오류")
   })
-  ResponseEntity<Void> deleteIndexData(@PathVariable Long id);
+  ResponseEntity<Void> deleteIndexData(Long id);
 
   @Operation(summary = "지수 데이터 목록 검색", description = "조건에 맞는 지수 데이터 목록을 커서 기반 페이징으로 조회합니다.")
   @ApiResponses({
