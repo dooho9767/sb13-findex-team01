@@ -21,8 +21,6 @@ public class AutoSyncScheduler {
 
     private static final String SCHEDULER_WORKER = "system";
 
-    private static final long DEFAULT_LOOKBACK_DAYS = 1;
-
     private final AutoSyncConfigService autoSyncConfigService;
     private final SyncJobManager syncJobManager;
 
