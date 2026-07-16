@@ -11,8 +11,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -28,7 +33,9 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 
 @JdbcTest
-@ActiveProfiles("local")
+// Docker를 사용할 수 없는 환경에서는 해당 테스트를 건너뜁니다.
+// TODO: Docker에 의존하지 않는 테스트 DB 환경으로 분리할 예정입니다.
+@Testcontainers(disabledWithoutDocker = true)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class SyncJobBulkRepositoryImplTest {
 
@@ -41,6 +48,16 @@ class SyncJobBulkRepositoryImplTest {
     void setUp() {
         syncJobBulkRepository = new SyncJobBulkRepositoryImpl(jdbcTemplate);
     }
+
+    @Container
+    @ServiceConnection
+    static final PostgreSQLContainer<?> POSTGRESQL =
+            new PostgreSQLContainer<>(
+                    DockerImageName.parse("postgres:16-alpine")
+            )
+                    .withDatabaseName("findex_test")
+                    .withUsername("test")
+                    .withPassword("test");
 
     @Test
     void saveInfoAll_지수정보가_존재하면_SUCCESS_이력을_저장한다() {
