@@ -2,6 +2,7 @@ package com.sb13.findex.sync.repository;
 
 import com.sb13.findex.indexinfo.entity.IndexInfo;
 import com.sb13.findex.sync.dto.AutoSyncTarget;
+import com.sb13.findex.sync.dto.projection.AutoSyncTargetProjection;
 import com.sb13.findex.sync.entity.AutoSyncConfig;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -53,9 +54,6 @@ public interface AutoSyncConfigRepository extends JpaRepository<AutoSyncConfig, 
     @Query("update AutoSyncConfig a set a.lastSyncedDate = :date where a.indexInfo.id in :indexInfoIds")
     void updateLastSyncedDate(@Param("indexInfoIds") List<Long> indexInfoIds, @Param("date") LocalDate date);
 
-    // 활성화된 자동 연동 설정과, 연결된 지수에 저장된 IndexData의 최신 baseDate를 함께 조회합니다.
-// LEFT JOIN이라 저장된 IndexData가 없는 지수도 결과에 포함되며, 이 경우 latestBaseDate는 null입니다.
-// (배치 스케줄러가 지수별 마지막 저장 날짜를 기준으로 연동 시작일을 계산할 때 사용 — IndexData 도메인 변경 없이 자체 쿼리로 처리)
     @Query("select a.indexInfo.id as indexInfoId, max(d.baseDate) as latestBaseDate " +
             "from AutoSyncConfig a " +
             "left join IndexData d on d.indexInfo = a.indexInfo " +

@@ -42,10 +42,13 @@ public class AutoSyncScheduler {
 
         // 대상 지수들 중 가장 오래된 마지막 저장 날짜의 다음 날을 조회 시작일로 설정
         LocalDate from = targets.stream()
-                .map(AutoSyncTargetProjection::getLatestBaseDate)
-                .filter(Objects::nonNull)
+                .map(target -> {
+                    LocalDate latestBaseDate = target.getLatestBaseDate();
+                    return latestBaseDate == null
+                            ? today.minusDays(DEFAULT_LOOKBACK_DAYS)
+                            : latestBaseDate.plusDays(1);
+                })
                 .min(LocalDate::compareTo)
-                .map(date -> date.plusDays(1))
                 .orElse(today.minusDays(DEFAULT_LOOKBACK_DAYS));
 
         if (from.isAfter(today)) {
