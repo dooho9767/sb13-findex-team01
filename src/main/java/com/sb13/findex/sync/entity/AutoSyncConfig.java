@@ -38,11 +38,4 @@ public class AutoSyncConfig extends BaseEntity {
     @Column(nullable = false)
     private boolean enabled;
 
-    // 추가
-    @Column(name = "index_classification_snapshot", length = 30)
-    private String indexClassificationSnapshot;
-
-    @Column(name = "index_name_snapshot", length = 100)
-    private String indexNameSnapshot;
-
 }

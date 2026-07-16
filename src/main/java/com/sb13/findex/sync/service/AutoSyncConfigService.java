@@ -35,22 +35,13 @@ public class AutoSyncConfigService {
         return saveNew(command);
     }
 
-    // 지수 UPSERT 로직에서 호출 (하정님 요청) - 이미 자동 연동 설정이 있으면 아무 작업도 하지 않고, 없으면 생성
-    @Transactional
-    public void createIfAbsent(AutoSyncConfigCommand command) {
-        if (autoSyncConfigRepository.existsByIndexInfo(command.indexInfo())) {
-            return;
-        }
-        saveNew(command);
-    }
+
 
     private AutoSyncConfigDto saveNew(AutoSyncConfigCommand command) {
         AutoSyncConfig saved = autoSyncConfigRepository.save(
                 AutoSyncConfig.builder()
                         .indexInfo(command.indexInfo())
                         .enabled(command.enabled())
-                        .indexClassificationSnapshot(command.indexInfo().getIndexClassification())
-                        .indexNameSnapshot(command.indexInfo().getIndexName())
                         .build());
         return toDto(saved);
     }
@@ -62,6 +53,13 @@ public class AutoSyncConfigService {
 
         config.setEnabled(enabled);
         return toDto(config);
+    }
+
+    // 지수 UPSERT 로직에서 호출 (하정님 요청)
+    // 존재 확인 후 별도 insert 방식 대신, DB 레벨 원자적 upsert로 경쟁 상태 방지 (구영님 피드백 반영)
+    @Transactional
+    public void createIfAbsent(AutoSyncConfigCommand command) {
+        autoSyncConfigRepository.upsertIfAbsent(command.indexInfo().getId(), command.enabled());
     }
 
     public CursorPageResponse<AutoSyncConfigDto> getList(AutoSyncConfigSearchCondition condition) {
