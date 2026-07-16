@@ -6,6 +6,7 @@ import com.sb13.findex.sync.service.AutoSyncConfigService;
 import com.sb13.findex.sync.service.SyncJobManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -34,24 +35,11 @@ public class AutoSyncScheduler {
             return;
         }
 
-        List<Long> indexInfoIds = targets.stream()
-                .map(AutoSyncTargetProjection::getIndexInfoId)
-                .toList();
-
         LocalDate today = LocalDate.now();
 
-        LocalDate oldestLatestBaseDate = targets.stream()
-                .map(AutoSyncTargetProjection::getLatestBaseDate)
-                .filter(Objects::nonNull)
-                .min(LocalDate::compareTo)
-                .orElse(null);
+        LocalDate oldestLatestBaseDate = getOldestLatestBaseDate(targets);
 
-        boolean allTargetsUpToDate = targets.stream()
-                .map(AutoSyncTargetProjection::getLatestBaseDate)
-                .allMatch(latestBaseDate ->
-                        latestBaseDate != null
-                                && !latestBaseDate.isBefore(today)
-                );
+        boolean allTargetsUpToDate = isAllTargetsUpToDate(targets, today);
 
         if (allTargetsUpToDate) {
             log.info(
@@ -85,6 +73,23 @@ public class AutoSyncScheduler {
                     e
             );
         }
+    }
+
+    private boolean isAllTargetsUpToDate(List<AutoSyncTargetProjection> targets, LocalDate today) {
+        return targets.stream()
+                .map(AutoSyncTargetProjection::getLatestBaseDate)
+                .allMatch(latestBaseDate ->
+                        latestBaseDate != null
+                                && !latestBaseDate.isBefore(today)
+                );
+    }
+
+    private @Nullable LocalDate getOldestLatestBaseDate(List<AutoSyncTargetProjection> targets) {
+        return targets.stream()
+                .map(AutoSyncTargetProjection::getLatestBaseDate)
+                .filter(Objects::nonNull)
+                .min(LocalDate::compareTo)
+                .orElse(null);
     }
 
     private IndexDataSyncCommand createSyncCommand(AutoSyncTargetProjection config, LocalDate today) {
