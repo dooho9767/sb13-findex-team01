@@ -8,6 +8,9 @@ import com.sb13.findex.sync.exception.DuplicateAutoSyncConfigException;
 import java.time.Instant;
 
 import java.util.Locale;
+
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BindException.class)
@@ -155,6 +159,25 @@ public class GlobalExceptionHandler {
             "데이터 충돌이 발생했습니다.",
             exception.getMessage()
         );
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleException(
+            HttpServletRequest request,
+            Exception exception
+    ) {
+        log.error(
+                "처리되지 않은 서버 오류가 발생했습니다. method={}, uri={}",
+                request.getMethod(),
+                request.getRequestURI(),
+                exception
+        );
+        return createErrorResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "서버 내부 오류가 발생했습니다.",
+                "서버 내부 오류가 발생했습니다."
+        );
+
     }
 
 }
