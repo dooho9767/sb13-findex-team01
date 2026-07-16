@@ -24,7 +24,10 @@ public class AutoSyncScheduler {
     private final AutoSyncConfigService autoSyncConfigService;
     private final SyncJobManager syncJobManager;
 
-    @Scheduled(cron = "${findex.batch.auto-sync.cron}")
+    @Scheduled(
+            cron = "${findex.batch.auto-sync.cron}",
+            zone = "${findex.batch.auto-sync.zone:Asia/Seoul}"
+    )
     public void syncEnabledIndexData() {
         List<AutoSyncTargetProjection> targets = autoSyncConfigService.getEnabledTargetsWithLatestBaseDate();
 
@@ -51,8 +54,8 @@ public class AutoSyncScheduler {
 
         List<IndexDataSyncCommand> commands = targets.stream()
                 .filter(target -> {
-                               LocalDate latestBaseDate = target.getLatestBaseDate();
-                              return latestBaseDate == null || latestBaseDate.isBefore(today);
+                    LocalDate latestBaseDate = target.getLatestBaseDate();
+                    return latestBaseDate == null || latestBaseDate.isBefore(today);
                 })
                 .map(target -> createSyncCommand(target, today))
                 .toList();

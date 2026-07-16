@@ -14,7 +14,8 @@ spring:
 findex:
   batch:
     auto-sync:
-      cron: "0 0 1 * * *"
+      cron: ${AUTO_SYNC_CRON:0 0 1 * * *}
+      zone: ${AUTO_SYNC_ZONE:Asia/Seoul}
   api:
     base-url: https://apis.data.go.kr/1160100/service/GetMarketIndexInfoService
     stock-market-endpoint: getStockMarketIndex
