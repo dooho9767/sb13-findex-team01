@@ -1,7 +1,6 @@
 package com.sb13.findex.sync.repository;
 
 import com.sb13.findex.indexinfo.entity.IndexInfo;
-import com.sb13.findex.sync.dto.AutoSyncTarget;
 import com.sb13.findex.sync.dto.projection.AutoSyncTargetProjection;
 import com.sb13.findex.sync.entity.AutoSyncConfig;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,7 +8,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,14 +43,6 @@ public interface AutoSyncConfigRepository extends JpaRepository<AutoSyncConfig, 
             DO NOTHING
             """, nativeQuery = true)
     void upsertIfAbsent(@Param("indexInfoId") Long indexInfoId, @Param("enabled") boolean enabled);
-
-    @Query("select new com.sb13.findex.sync.dto.AutoSyncTarget(a.indexInfo.id, a.lastSyncedDate) " +
-            "from AutoSyncConfig a where a.enabled = :enabled")
-    List<AutoSyncTarget> findEnabledSyncTargets(@Param("enabled") boolean enabled);
-
-    @Modifying
-    @Query("update AutoSyncConfig a set a.lastSyncedDate = :date where a.indexInfo.id in :indexInfoIds")
-    void updateLastSyncedDate(@Param("indexInfoIds") List<Long> indexInfoIds, @Param("date") LocalDate date);
 
     @Query("select a.indexInfo.id as indexInfoId, max(d.baseDate) as latestBaseDate " +
             "from AutoSyncConfig a " +
