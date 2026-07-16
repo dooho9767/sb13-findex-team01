@@ -78,9 +78,8 @@ public class SyncJobManager {
 
     }
 
-    public List<SyncJobDto> syncIndexDataList(IndexDataSyncCommand command, String worker) {
-        List<Long> indexInfoIds = command.indexInfoIds();
-        LocalDate baseDateFrom = command.baseDateFrom();
+    public List<SyncJobDto> syncIndexDataList(List<IndexDataSyncCommand> commands, String worker) {
+        List<Long> indexInfoIds = commands.stream().map(IndexDataSyncCommand::indexInfoId).toList();
 
         List<IndexInfo> indexInfos = indexInfoReader.findIndexInfosByIds(indexInfoIds);
         if (indexInfos.isEmpty()) {
@@ -88,7 +87,10 @@ public class SyncJobManager {
             return List.of();
         }
 
-        List<StockIndexFetchTarget> fetchTargets = createFetchTargets(indexInfos, baseDateFrom);
+        Map<Long, IndexDataSyncCommand> indexDataSyncMap = commands.stream()
+                .collect(Collectors.toMap(IndexDataSyncCommand::indexInfoId, Function.identity()));
+
+        List<StockIndexFetchTarget> fetchTargets = createFetchTargets(indexInfos, indexDataSyncMap);
 
         List<FetchOutcome> fetchOutcomes = fetchInBatches(fetchTargets);
 
@@ -113,8 +115,8 @@ public class SyncJobManager {
 
     }
 
-    public List<SyncJobDto> syncIndexDataList(IndexDataSyncCommand command) {
-        return syncIndexDataList(command, ipAddressService.getClientIp());
+    public List<SyncJobDto> syncIndexDataList(List<IndexDataSyncCommand> commands) {
+        return syncIndexDataList(commands, ipAddressService.getClientIp());
     }
 
     private List<StockMarketIndex> fetchPagesAsync(DataGoKrApiResponse<StockMarketIndex> firstResponse, StockMarketIndexApiRequest request) {
@@ -335,20 +337,21 @@ public class SyncJobManager {
      * 비동기 결과가 어떤 지수에 대한 것인지 추적할 수 있습니다.
      */
     private List<StockIndexFetchTarget> createFetchTargets(
-            List<IndexInfo> indexInfos,
-            LocalDate baseDateFrom
+            List<IndexInfo> indexInfos, Map<Long, IndexDataSyncCommand> indexDataSyncMap
     ) {
         return indexInfos.stream()
                 .map(indexInfo -> {
                     IndexInfoKey key =
                             createIndexInfoKey(indexInfo);
 
+                    IndexDataSyncCommand indexDataSyncCommand = indexDataSyncMap.get(indexInfo.getId());
+
                     StockMarketIndexApiRequest request =
                             StockMarketIndexApiRequest
                                     .ofExactIndexNamePage(
                                             DEFAULT_NUM_OF_ROWS,
                                             DEFAULT_PAGE_NUMBER,
-                                            baseDateFrom,
+                                            indexDataSyncCommand.baseDateFrom(),
                                             key.indexName()
                                     );
 

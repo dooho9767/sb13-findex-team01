@@ -20,7 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/sync-jobs")
 @RequiredArgsConstructor
-public class SyncJobController implements SyncJobApi{
+public class SyncJobController implements SyncJobApi {
 
     private final SyncJobService syncJobService;
 
@@ -42,7 +42,7 @@ public class SyncJobController implements SyncJobApi{
             @RequestParam(required = false) String cursor,
             @RequestParam(required = false) Long idAfter,
             @RequestParam(required = false) Integer size
-            ){
+    ) {
         SyncJobSearchRequest request = new SyncJobSearchRequest(
                 jobType,
                 indexInfoId,
@@ -64,7 +64,7 @@ public class SyncJobController implements SyncJobApi{
 
     @Override
     @PostMapping("/index-infos")
-    public ResponseEntity<List<SyncJobDto>> syncIndexInfos(){
+    public ResponseEntity<List<SyncJobDto>> syncIndexInfos() {
         List<SyncJobDto> syncJobDtos = syncJobManager.syncIndexInfos();
         HttpStatus status = syncJobDtos.isEmpty() ? HttpStatus.OK : HttpStatus.CREATED;
         return ResponseEntity.status(status).body(syncJobDtos);
@@ -72,8 +72,8 @@ public class SyncJobController implements SyncJobApi{
 
     @Override
     @PostMapping("/index-data")
-    public ResponseEntity<List<SyncJobDto>> syncIndexData(@Valid @RequestBody IndexDataSyncRequest request){
-        List<SyncJobDto> syncJobDtos = syncJobManager.syncIndexDataList(request.toCommand());
+    public ResponseEntity<List<SyncJobDto>> syncIndexData(@Valid @RequestBody IndexDataSyncRequest request) {
+        List<SyncJobDto> syncJobDtos = syncJobManager.syncIndexDataList(request.toCreateSyncCommands());
         HttpStatus status = syncJobDtos.isEmpty() ? HttpStatus.OK : HttpStatus.CREATED;
         return ResponseEntity.status(status).body(syncJobDtos);
     }
