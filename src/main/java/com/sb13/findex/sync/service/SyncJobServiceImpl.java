@@ -82,7 +82,7 @@ public class SyncJobServiceImpl implements SyncJobService {
 
     @Transactional
     @Override
-    public List<SyncJobDto> indexDataSaveAll(List<IndexDataOpenApiCommand> dataOpenApiCommands, String worker) {
+    public void indexDataSaveAll(List<IndexDataOpenApiCommand> dataOpenApiCommands, String worker, UUID uuid ) {
         log.info("indexDataSaveAll called with {} commands", dataOpenApiCommands.size());
 
         dataOpenApiCommands.forEach(indexDataService::saveOrUpdateOpenApiData);
@@ -91,15 +91,7 @@ public class SyncJobServiceImpl implements SyncJobService {
                 .map(this::createIndexDataKey)
                 .toList();
 
-        UUID uuid = UUID.randomUUID();
-
         syncJobRepository.saveDataAll(worker, indexDataSyncJobTargets, uuid);
-
-        List<SyncJob> foundSyncJobs = syncJobRepository.findBySyncExecutionId(uuid);
-
-        return foundSyncJobs.stream()
-                .map(SyncJobMapper::toSyncJobDto)
-                .toList();
 
     }
 
@@ -125,6 +117,12 @@ public class SyncJobServiceImpl implements SyncJobService {
                 .toList();
     }
 
+    @Override
+    public List<SyncJobDto> foundSyncJobs(UUID uuid) {
+        return syncJobRepository.findBySyncExecutionId(uuid).stream()
+                .map(SyncJobMapper::toSyncJobDto)
+                .toList();
+    }
 
 
     private IndexInfoKey getIndexInfoKey(IndexInfoCreateCommand command) {

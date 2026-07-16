@@ -113,7 +113,7 @@ class SyncJobServiceImplTest {
         given(syncJobRepository.findBySyncExecutionId(any(UUID.class))).willReturn(List.of());
 
         // when
-        syncJobService.indexDataSaveAll(List.of(command), worker);
+        syncJobService.indexDataSaveAll(List.of(command), worker, UUID.randomUUID());
 
         // then
         verify(indexDataService).saveOrUpdateOpenApiData(command);

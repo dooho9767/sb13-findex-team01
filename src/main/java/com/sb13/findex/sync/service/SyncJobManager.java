@@ -92,26 +92,10 @@ public class SyncJobManager {
 
         List<StockIndexFetchTarget> fetchTargets = createFetchTargets(indexInfos, indexDataSyncMap);
 
-        List<FetchOutcome> fetchOutcomes = fetchInBatches(fetchTargets);
+        UUID uuid = UUID.randomUUID();
+        fetchInBatches(fetchTargets,worker, uuid);
 
-        List<IndexDataOpenApiCommand> openApiCommands = fetchOutcomes.stream()
-                .filter(fo -> {
-                    if (fo.isSuccess()) {
-                        return true;
-                    }
-                    log.error(
-                            "지수 데이터 외부 API 조회 실패. indexInfoId={}, key={}",
-                            fo.target().indexInfo().getId(),
-                            fo.target().key(),
-                            fo.error()
-                    );
-                    return false;
-                })
-                .map(fo -> createIndexDataCommands(fo.target(), fo.items()))
-                .flatMap(Collection::stream)
-                .toList();
-
-        return syncJobService.indexDataSaveAll(openApiCommands, worker);
+        return syncJobService.foundSyncJobs(uuid);
 
     }
 
@@ -367,10 +351,9 @@ public class SyncJobManager {
     /**
      * 전체 대상을 최대 50건씩 나누어 실행합니다.
      */
-    private List<FetchOutcome> fetchInBatches(List<StockIndexFetchTarget> targets) {
+    private void fetchInBatches(List<StockIndexFetchTarget> targets, String worker,  UUID uuid) {
         int fetchBatchSize = resolveFetchBatchSize();
 
-        List<FetchOutcome> results = new ArrayList<>();
 
         for (int fromIndex = 0; fromIndex <= targets.size(); fromIndex += fetchBatchSize) {
 
@@ -378,10 +361,25 @@ public class SyncJobManager {
 
             List<StockIndexFetchTarget> batch = targets.subList(fromIndex, toIndex);
 
-            results.addAll(fetchBatch(batch));
-        }
+            List<IndexDataOpenApiCommand> openApiCommands = fetchBatch(batch).stream()
+                    .filter(fo -> {
+                        if (fo.isSuccess()) {
+                            return true;
+                        }
+                        log.error(
+                                "지수 데이터 외부 API 조회 실패. indexInfoId={}, key={}",
+                                fo.target().indexInfo().getId(),
+                                fo.target().key(),
+                                fo.error()
+                        );
+                        return false;
+                    })
+                    .map(fo -> createIndexDataCommands(fo.target(), fo.items()))
+                    .flatMap(Collection::stream)
+                    .toList();
 
-        return List.copyOf(results);
+            syncJobService.indexDataSaveAll(openApiCommands, worker, uuid);
+        }
     }
 
     private int resolveFetchBatchSize() {
