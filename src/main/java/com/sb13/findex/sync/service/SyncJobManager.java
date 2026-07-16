@@ -78,13 +78,34 @@ public class SyncJobManager {
 
     }
 
-    public List<SyncJobDto> syncIndexDataList(List<IndexDataSyncCommand> commands, String worker) {
+    public List<SyncJobDto> syncIndexDataList(
+            List<IndexDataSyncCommand> commands,
+            String worker
+    ) {
+        boolean isSystemWorker = "system".equals(worker);
+        Optional<UUID> uuid = executeSync(commands, worker);
+
+        if (isSystemWorker) {
+            // 대량의 데이터가 있을경우 오류가 발생하는 것.. 같음..
+            // 좀더 테스트 필요.
+            return List.of();
+        }
+
+        return uuid
+                .map(syncJobService::foundSyncJobs)
+                .orElseGet(List::of);
+    }
+
+    private Optional<UUID> executeSync(
+            List<IndexDataSyncCommand> commands,
+            String worker
+    ) {
         List<Long> indexInfoIds = commands.stream().map(IndexDataSyncCommand::indexInfoId).toList();
 
         List<IndexInfo> indexInfos = indexInfoReader.findIndexInfosByIds(indexInfoIds);
         if (indexInfos.isEmpty()) {
             log.warn("동기화할 지수정보가 없습니다.");
-            return List.of();
+            return Optional.empty();
         }
 
         Map<Long, IndexDataSyncCommand> indexDataSyncMap = commands.stream()
@@ -94,9 +115,7 @@ public class SyncJobManager {
 
         UUID uuid = UUID.randomUUID();
         fetchInBatches(fetchTargets,worker, uuid);
-
-        return syncJobService.foundSyncJobs(uuid);
-
+        return Optional.of(uuid);
     }
 
     public List<SyncJobDto> syncIndexDataList(List<IndexDataSyncCommand> commands) {
