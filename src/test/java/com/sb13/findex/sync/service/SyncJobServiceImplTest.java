@@ -112,7 +112,6 @@ class SyncJobServiceImplTest {
                 12197991898146L,
                 2262832341048634L
         );
-        given(syncJobRepository.findBySyncExecutionId(any(UUID.class))).willReturn(List.of());
 
         // when
         UUID executionId = UUID.randomUUID();
