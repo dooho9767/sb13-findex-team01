@@ -137,8 +137,7 @@ public class SyncJobManager {
 
         int fetchBatchSize = resolveFetchBatchSize();
 
-        List<StockMarketIndex> result =
-                new ArrayList<>(firstResponse.getItem());
+        Map<IndexInfoKey, StockMarketIndex> latestStockMarketIndices = getLatestStockMarketIndices(firstResponse.getItem());
 
         for (int fromPage = pageNo + 1; fromPage <= totalPages; fromPage += fetchBatchSize) {
 
@@ -178,11 +177,19 @@ public class SyncJobManager {
                         return outcome.isSuccess();
                     })
                     .flatMap(outcome -> outcome.items.stream())
-                    .forEach(result::add);
+                    .forEach(current->{
+                        IndexInfoKey infoKey = new IndexInfoKey(current.idxCsf(), current.idxNm());
+
+                        latestStockMarketIndices.merge(
+                                infoKey,
+                                current,
+                                this::selectLatest
+                        );
+                    });
 
         }
 
-        return List.copyOf(result);
+        return List.copyOf(latestStockMarketIndices.values());
     }
 
     private CompletableFuture<PageFetchOutcome> fetchPageAsync(int pageNo, StockMarketIndexApiRequest request) {
