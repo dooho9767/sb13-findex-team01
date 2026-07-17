@@ -2,7 +2,9 @@ package com.sb13.findex.sync.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.sb13.findex.indexdata.dto.command.IndexDataOpenApiCommand;
@@ -71,7 +73,7 @@ class SyncJobServiceImplTest {
 
         ArgumentCaptor<List<IndexInfoKey>> keysCaptor = ArgumentCaptor.captor();
         verify(syncJobRepository).saveInfoAll(
-                org.mockito.ArgumentMatchers.eq(worker),
+                eq(worker),
                 keysCaptor.capture(),
                 any(UUID.class)
         );
@@ -113,17 +115,19 @@ class SyncJobServiceImplTest {
         given(syncJobRepository.findBySyncExecutionId(any(UUID.class))).willReturn(List.of());
 
         // when
-        syncJobService.indexDataSaveAll(List.of(command), worker, UUID.randomUUID());
+        UUID executionId = UUID.randomUUID();
+        syncJobService.indexDataSaveAll(List.of(command), worker, executionId);
 
         // then
         verify(indexDataService).saveOrUpdateOpenApiData(command);
 
         ArgumentCaptor<List<IndexDataSyncJobTarget>> targetsCaptor = ArgumentCaptor.captor();
         verify(syncJobRepository).saveDataAll(
-                org.mockito.ArgumentMatchers.eq(worker),
+                eq(worker),
                 targetsCaptor.capture(),
-                any(UUID.class)
+                eq(executionId)
         );
+        verify(syncJobRepository, never()).findBySyncExecutionId(any(UUID.class));
         assertThat(targetsCaptor.getValue())
                 .containsExactly(new IndexDataSyncJobTarget(
                         1L,
