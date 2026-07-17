@@ -29,7 +29,8 @@ public class AutoSyncScheduler {
     private String autoSyncZone;
 
     @Scheduled(
-            cron = "${findex.batch.auto-sync.cron}"
+            cron = "${findex.batch.auto-sync.cron}",
+            zone = "${findex.batch.auto-sync.zone:Asia/Seoul}"
     )
     public void syncEnabledIndexData() {
         List<AutoSyncTargetProjection> targets = autoSyncConfigService.getEnabledTargetsWithLatestBaseDate();
