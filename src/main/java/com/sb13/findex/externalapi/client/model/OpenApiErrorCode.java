@@ -1,4 +1,4 @@
-package com.sb13.findex.sync.client.model;
+package com.sb13.findex.externalapi.client.model;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

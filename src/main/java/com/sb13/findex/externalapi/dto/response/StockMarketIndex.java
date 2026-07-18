@@ -1,4 +1,4 @@
-package com.sb13.findex.sync.dto.response;
+package com.sb13.findex.externalapi.dto.response;
 
 import com.sb13.findex.indexdata.dto.command.IndexDataOpenApiCommand;
 import com.sb13.findex.indexinfo.dto.command.IndexInfoCreateCommand;

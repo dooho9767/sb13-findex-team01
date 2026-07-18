@@ -1,4 +1,4 @@
-package com.sb13.findex.global.config;
+package com.sb13.findex.externalapi.config;
 
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
 import org.springframework.boot.http.client.ClientHttpRequestFactorySettings;

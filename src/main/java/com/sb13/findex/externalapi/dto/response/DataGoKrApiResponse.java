@@ -1,4 +1,4 @@
-package com.sb13.findex.sync.dto.response;
+package com.sb13.findex.externalapi.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

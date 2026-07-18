@@ -1,9 +1,9 @@
-package com.sb13.findex.sync.service;
+package com.sb13.findex.externalapi.service;
 
-import com.sb13.findex.global.config.FindexApiProperties;
-import com.sb13.findex.sync.dto.request.StockMarketIndexApiRequest;
-import com.sb13.findex.sync.dto.response.DataGoKrApiResponse;
-import com.sb13.findex.sync.dto.response.StockMarketIndex;
+import com.sb13.findex.externalapi.config.FindexApiProperties;
+import com.sb13.findex.externalapi.dto.request.StockMarketIndexApiRequest;
+import com.sb13.findex.externalapi.dto.response.DataGoKrApiResponse;
+import com.sb13.findex.externalapi.dto.response.StockMarketIndex;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;

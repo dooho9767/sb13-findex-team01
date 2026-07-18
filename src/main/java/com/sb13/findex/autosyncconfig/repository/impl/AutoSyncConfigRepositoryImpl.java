@@ -7,11 +7,11 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sb13.findex.autosyncconfig.dto.condition.AutoSyncConfigSearchCondition;
 import com.sb13.findex.autosyncconfig.dto.condition.AutoSyncConfigSortField;
 import com.sb13.findex.autosyncconfig.entity.AutoSyncConfig;
+import com.sb13.findex.autosyncconfig.entity.QAutoSyncConfig;
 import com.sb13.findex.global.exception.request.InvalidSortDirectionException;
 import com.sb13.findex.autosyncconfig.repository.AutoSyncConfigRepositoryCustom;
 import org.springframework.stereotype.Repository;
 import com.sb13.findex.indexinfo.entity.QIndexInfo;
-import com.sb13.findex.sync.entity.QAutoSyncConfig;
 
 import java.util.List;
 

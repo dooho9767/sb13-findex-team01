@@ -1,4 +1,4 @@
-package com.sb13.findex.sync.dto.request;
+package com.sb13.findex.externalapi.dto.request;
 
 import lombok.With;
 import org.springframework.util.LinkedMultiValueMap;
