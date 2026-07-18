@@ -1,6 +1,6 @@
 package com.sb13.findex.sync.dto.command;
 
-import com.sb13.findex.sync.dto.response.StockMarketIndex;
+import com.sb13.findex.externalapi.dto.response.StockMarketIndex;
 
 /**
  * 공공데이터 API 응답으로부터 지수 정보를 식별하기 위한 키입니다.

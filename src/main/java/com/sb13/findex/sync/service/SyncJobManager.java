@@ -1,17 +1,18 @@
 package com.sb13.findex.sync.service;
 
 
-import com.sb13.findex.global.config.ExternalApiProperties;
+import com.sb13.findex.externalapi.config.ExternalApiProperties;
+import com.sb13.findex.externalapi.client.model.OpenApiErrorCode;
+import com.sb13.findex.externalapi.dto.request.StockMarketIndexApiRequest;
+import com.sb13.findex.externalapi.dto.response.DataGoKrApiResponse;
+import com.sb13.findex.externalapi.dto.response.StockMarketIndex;
+import com.sb13.findex.externalapi.service.DataGoKrApiService;
 import com.sb13.findex.indexdata.dto.command.IndexDataOpenApiCommand;
 import com.sb13.findex.indexinfo.dto.command.IndexInfoCreateCommand;
 import com.sb13.findex.indexinfo.entity.IndexInfo;
 import com.sb13.findex.indexinfo.service.IndexInfoReader;
-import com.sb13.findex.sync.client.modle.OpenApiErrorCode;
 import com.sb13.findex.sync.dto.command.IndexDataSyncCommand;
 import com.sb13.findex.sync.dto.command.IndexInfoKey;
-import com.sb13.findex.sync.dto.request.StockMarketIndexApiRequest;
-import com.sb13.findex.sync.dto.response.DataGoKrApiResponse;
-import com.sb13.findex.sync.dto.response.StockMarketIndex;
 import com.sb13.findex.sync.dto.response.SyncJobDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
